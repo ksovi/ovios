@@ -1,0 +1,26 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+groups=(ovios)
+pkgname=lm_sensors
+pkgver=3.6.0
+pkgrel=1
+
+pkgdesc="Collection of user space tools for general SMBus access and hardware monitoring"
+arch=('x86_64')
+url="https://hwmon.wiki.kernel.org/lm_sensors"
+license=('GPL' 'LGPL')
+
+backup=('etc/sensors3.conf' 'etc/healthd.conf' 'etc/sysconfig/sensord')
+#source=(lm_sensors-${pkgver}.tar.gz::https://github.com/lm-sensors/lm-sensors/archive/V${_pkgver}.tar.gz
+source=("https://github.com/lm-sensors/lm-sensors/archive/refs/tags/V3-6-0.tar.gz")
+
+
+build() {
+  cd "${srcdir}"/lm-sensors*
+  make PREFIX=/usr BUILD_STATIC_LIB=0  
+}
+
+package() {
+  cd "${srcdir}"/lm-sensors*
+  make PROG_EXTRA=sensord BUILD_STATIC_LIB=0 \
+    PREFIX=/usr SBINDIR=/usr/sbin MANDIR=/usr/share/man DESTDIR="${pkgdir}" install
+}

@@ -1,0 +1,23 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=libarchive
+pkgver=3.6.0
+pkgrel=1
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.gz)
+
+build() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	sed -i '436a if ((OSSL_PROVIDER_load(NULL, "legacy")) == NULL) \
+      return (ARCHIVE_FAILED);' libarchive/archive_digest.c
+	./configure --prefix=/usr --disable-static
+	make
+}
+
+package() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	make DESTDIR=${pkgdir} install
+}
+

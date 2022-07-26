@@ -1,0 +1,20 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=libuv
+pkgdesc="The libuv package is a multi-platform support library with a focus on asynchronous I/O."
+pkgver=1.44.1
+pkgrel=1
+arch=(x86_64)
+source=(https://dist.libuv.org/dist/v${pkgver}/libuv-v${pkgver}.tar.gz)
+groups=(ovios)
+build() {
+cd $pkgname-v$pkgver
+	sh autogen.sh
+	./configure --prefix=/usr --disable-static
+	make 
+}
+
+package() {
+  cd $pkgname-v$pkgver
+  make DESTDIR=${pkgdir} install
+}
+

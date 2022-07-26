@@ -1,0 +1,33 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=yp-tools
+pkgver=4.2.3
+pkgrel=6
+pkgdesc='Linux NIS Tools'
+arch=('i686' 'x86_64')
+url='https://github.com/thkukuk/yp-tools'
+license=('GPL2')
+
+backup=('etc/nisdomainname' 'etc/nicknames')
+source=("v$pkgver.tar.gz"
+	'yp-tools.conf'
+	'domainname.conf')
+
+prepare() {
+  cd $pkgname-$pkgver
+  ./autogen.sh
+}
+
+build() {
+  cd $pkgname-$pkgver
+  ./configure --prefix=/usr --sbindir=/usr/sbin
+  make V=0
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir" install
+  install -D -m644 ../domainname.conf "${pkgdir}/etc/nisdomainname"
+  install -D -m644 "${pkgdir}/var/yp/nicknames" "${pkgdir}/etc/nicknames"
+  install -D -m644 ../yp-tools.conf  "${pkgdir}/etc/yp-tools.conf"
+  rm -fr "${pkgdir}/var"
+}

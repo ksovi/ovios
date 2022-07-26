@@ -1,0 +1,21 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=python-chardet
+pkgver=4.0.0
+pkgrel=1
+arch=('any')
+url="https://github.com/chardet/chardet"
+license=('LGPL')
+pkgdesc="Python3 module for character encoding auto-detection"
+
+source=("https://pypi.io/packages/source/c/chardet/chardet-${pkgver}.tar.gz")
+
+build() {
+   cd "$srcdir"/chardet-$pkgver
+   python setup.py build
+}
+
+package() {
+   cd chardet-$pkgver
+   python setup.py install --root="$pkgdir" --optimize=1
+}
+

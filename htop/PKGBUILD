@@ -1,0 +1,37 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=htop
+pkgver=3.1.2
+pkgrel=1
+arch=(x86_64)
+source=(https://github.com/hishamhm/htop/archive/${pkgver}.tar.gz)
+groups=(ovios)
+pkgdesc="htop is a cross-platform interactive process viewer"
+
+prepare() {
+  cd "${pkgname}-${pkgver}"
+
+  autoreconf -fi
+}
+
+build() {
+  cd "${pkgname}-${pkgver}"
+
+  ./configure \
+      --prefix=/usr \
+      --sysconfdir=/etc \
+      --enable-cgroup \
+      --enable-delayacct \
+      --enable-openvz \
+      --enable-unicode \
+      --enable-vserver
+
+  make
+}
+
+package() {
+  cd "${pkgname}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install
+}
+
+

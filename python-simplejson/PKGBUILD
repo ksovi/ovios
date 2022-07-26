@@ -1,0 +1,25 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+_name=PyYAML
+pkgname=python-simplejson
+pkgver=3.17.6
+pkgrel=1
+pkgdesc='Simple, fast, extensible JSON encoder/decoder for Python'
+license=('MIT')
+arch=('x86_64')
+url='https://github.com/simplejson/simplejson'
+groups=(ovios)
+
+source=("$pkgname-$pkgver.tar.gz::https://github.com/simplejson/simplejson/archive/v$pkgver.tar.gz")
+
+build() {
+  cd "$srcdir"/simplejson-$pkgver
+  python setup.py build
+}
+
+package_python-simplejson() {
+  cd simplejson-$pkgver
+  python setup.py install --root="$pkgdir"
+  install -Dm644 "$srcdir"/simplejson-$pkgver/LICENSE.txt \
+    "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+}
+

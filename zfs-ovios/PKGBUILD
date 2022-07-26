@@ -1,0 +1,31 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=zfs-ovios
+pkgdesc="OpenZFS is storage software which combines the functionality of traditional filesystems, volume manager, and more"
+_pkgname=zfs-zfs
+pkgver=2.1.4
+_kernel=5.17.4
+pkgrel=1
+arch=(x86_64)
+source=(https://github.com/zfsonlinux/zfs/archive/zfs-${pkgver}.tar.gz)
+groups=(ovios)
+
+build() {
+cd $_pkgname-$pkgver
+  ./autogen.sh
+  sed -i s/ZFS_INIT_SYSV=init.d/ZFS_INIT_SYSV=rc.d\\/init.d/g configure
+  ./configure --prefix=/usr --sysconfdir=/etc --sbindir=/usr/sbin --libdir=/usr/lib \
+                --includedir=/usr/include --with-udevdir=/usr/lib/udev \
+                --libexecdir=/usr/lib   \
+                --with-linux=/usr/lib/modules/${_kernel}-OVIOS/build/ \
+		--with-vendor=OviOS
+  make
+}
+
+package() {
+  cd $_pkgname-$pkgver
+  make DESTDIR=${pkgdir} INSTALL_MOD_PATH=${pkgdir}/usr install
+  mkdir -p ${pkgdir}/usr/sbin
+  cp -av ${pkgdir}/sbin/mount.zfs ${pkgdir}/usr/sbin/mount.zfs
+  rm -rf ${pkgdir}/sbin/ 
+}
+md5sums=(SKIP)

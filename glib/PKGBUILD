@@ -1,0 +1,29 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=glib
+pkgver=2.72.0
+pkgrel=1
+pkgdesc="The GLib package contains low-level libraries useful for providing data structure handling for C, portability wrappers and interfaces for such runtime functionality as an event loop, threads, dynamic loading and an object system."
+arch=(any)
+source=(ftp://ftp.acc.umu.se/pub/gnome/sources/glib/2.72/glib-${pkgver}.tar.xz)
+
+groups=(ovios)
+depends=(pcre)
+
+build() {
+cd $pkgname-$pkgver
+	mkdir build
+	cd    build 
+	meson --prefix=/usr       \
+      --buildtype=release	  \
+      -Dman=false   
+	ninja
+}
+
+package() {
+	cd $pkgname-$pkgver/build
+	DESTDIR=${pkgdir} ninja install
+	mkdir -p ${pkgdir}/usr/share/doc/glib-${pkgver}
+	cp -r ../docs/reference/{gio,glib,gobject} ${pkgdir}/usr/share/doc/glib-${pkgver}
+	# if an upgrade
+	rm -f ${pkgdir}/usr/include/glib-2.0/glib/gurifuncs.h
+}

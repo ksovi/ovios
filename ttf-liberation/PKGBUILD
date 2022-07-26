@@ -1,0 +1,23 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=ttf-liberation
+pkgver=2.1.5
+pkgrel=1
+pkgdesc='Font family which aims at metric compatibility with Arial, Times New Roman, and Courier New'
+arch=('any')
+url=https://github.com/liberationfonts/liberation-fonts
+license=('custom:OFL')
+groups=(ovios-cluster)
+source=("$url/archive/$pkgver/liberation-fonts-$pkgver.tar.gz")
+
+
+build() {
+  cd liberation-fonts-$pkgver
+  make build
+}
+
+package() {
+  cd liberation-fonts-$pkgver
+  install -Dm644 -t "$pkgdir/usr/share/fonts/${pkgname#ttf-}" \
+    liberation-fonts-ttf-$pkgver/*.ttf
+  install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname" LICENSE
+}

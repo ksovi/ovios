@@ -1,0 +1,39 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=net-snmp
+pkgver=5.9.1
+pkgrel=1
+pkgdesc="A suite of applications used to implement SNMP v1, SNMP v2c and SNMP v3 using both IPv4 and IPv6"
+arch=('i686' 'x86_64')
+url="http://www.net-snmp.org/"
+license=('BSD')
+options=('!emptydirs' '!makeflags')
+source=(https://downloads.sourceforge.net/${pkgname}/${pkgname}-${pkgver}.tar.gz)
+
+prepare() {
+	 cd ${pkgname}-${pkgver}
+	 autoreconf -i 
+}
+
+build() {
+	 cd ${pkgname}-${pkgver}
+	 ./configure --prefix=/usr \
+	   --sysconfdir=/etc --sbindir=/usr/sbin \
+	   --mandir=/usr/share/man \
+	   --enable-ucd-snmp-compatibility \
+	   --enable-ipv6 \
+	   --with-python-modules \
+	   --with-default-snmp-version="3" \
+	   --with-sys-contact="root@localhost" \
+	   --with-sys-location="Unknown" \
+	   --with-logfile="/var/log/snmpd.log" \
+	   --with-mib-modules="host misc/ipfwacc ucd-snmp/diskio tunnel ucd-snmp/dlmod ucd-snmp/lmsensorsMib" \
+	   --with-persistent-directory="/var/net-snmp"
+	 make NETSNMP_DONT_CHECK_VERSION=1
+}
+
+package() {
+	 cd ${pkgname}-${pkgver}
+	 sed -i -e "s:install --basedir=\$\$dir:install --basedir=\$\$dir --root=${pkgdir}:" Makefile
+	 make DESTDIR="${pkgdir}" INSTALL_PREFIX="${pkgdir}" INSTALLDIRS=vendor install
+	 install -D -m644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

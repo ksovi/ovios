@@ -1,0 +1,25 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=lvm2
+pkgdesc="The LVM2 package is a set of tools that manage logical partitions"
+pkgver=2.03.15
+pkgrel=1
+arch=(x86_64)
+source=(https://sourceware.org/ftp/lvm2/LVM2.${pkgver}.tgz)
+groups=(ovios)
+
+build() {
+cd LVM2.$pkgver
+	PATH+=:/usr/sbin    \
+	./configure --prefix=/usr       \
+            --enable-cmdlib     \
+            --enable-pkgconfig  \
+            --enable-udev_sync
+	make
+}
+
+package() {
+  cd LVM2.$pkgver
+  make DESTDIR=${pkgdir} install
+  rm ${pkgdir}/usr/lib/udev/rules.d/69-dm-lvm.rules
+}
+

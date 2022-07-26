@@ -1,0 +1,28 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=doxygen
+pkgver=1.9.3
+pkgrel=1
+pkgdesc="The Doxygen package contains a documentation system for C++, C, Java, Objective-C, Corba IDL and to some extent PHP, C# and D."
+arch=('x86_64')
+groups=(ovios-dev)
+source=("https://doxygen.nl/files/doxygen-${pkgver}.src.tar.gz")
+
+build() {
+	cd $pkgname-$pkgver
+	mkdir -v build 
+	cd       build 
+
+	cmake -G "Unix Makefiles"         \
+		  -DCMAKE_BUILD_TYPE=Release  \
+		  -DCMAKE_INSTALL_PREFIX=/usr \
+		  -Wno-dev ..
+
+	make
+}
+
+
+package() {
+  cd $pkgname-$pkgver/build
+  make DESTDIR="$pkgdir" install
+}
+

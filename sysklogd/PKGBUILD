@@ -1,0 +1,27 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=sysklogd
+pkgver=1.5.1
+pkgrel=1
+pkgdesc="The sysklogd package contains programs for logging system messages, such as those given by the kernel when unusual things happen." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+backup=(etc/syslog.conf)
+
+source=($pkgname-$pkgver.tar.gz
+syslog.conf)
+
+build() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	sed -i '/Error loading kernel symbols/{n;n;d}' ksym_mod.c
+	sed -i 's/union wait/int/' syslogd.c
+	make
+}
+
+package() { 
+    cd "$srcdir/$pkgname-$pkgver"
+        mkdir -p ${pkgdir}/usr/bin
+	make DESTDIR=${pkgdir} BINDIR=${pkgdir}/usr/bin install
+	mkdir -p ${pkgdir}/etc/
+	cp ../syslog.conf ${pkgdir}/etc/syslog.conf
+}

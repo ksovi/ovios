@@ -1,0 +1,18 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=libmnl
+pkgver=1.0.5
+pkgrel=1
+pkgdesc="The libmnl library provides a minimalistic user-space library oriented to Netlink developers"
+arch=(x86_64)
+source=(https://netfilter.org/projects/libmnl/files/${pkgname}-${pkgver}.tar.bz2)
+
+build() {
+cd $pkgname-$pkgver
+	./configure --prefix=/usr
+	make
+}
+
+package() {
+	cd $pkgname-$pkgver
+	make DESTDIR=${pkgdir} install
+}

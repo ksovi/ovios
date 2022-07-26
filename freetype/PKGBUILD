@@ -1,0 +1,24 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=freetype
+pkgver=2.11.1
+pkgrel=1
+pkgdesc="The The GRUB package contains the GRand Unified Bootloader."
+arch=(i686 x86_64)
+
+groups=(ovios)
+
+source=(https://downloads.sourceforge.net/freetype/freetype-2.11.1.tar.xz)
+build() {
+    cd "$srcdir/$pkgname-$pkgver"
+	sed -ri "s:.*(AUX_MODULES.*valid):\1:" modules.cfg
+
+	sed -r "s:.*(#.*SUBPIXEL_RENDERING) .*:\1:" \
+    -i include/freetype/config/ftoption.h
+	./configure --prefix=/usr --enable-freetype-config --disable-static
+	make
+}
+
+package() {
+    cd "$srcdir/$pkgname-$pkgver"
+        make DESTDIR=${pkgdir} install
+}

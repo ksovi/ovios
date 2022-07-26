@@ -1,0 +1,24 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=pcs
+pkgver=0.9.170
+pkgrel=1
+pkgdesc='pacemaker corosync shell utility for cluster configuration'
+arch=('any')
+url='http://clusterlabs.org/'
+license=('GPL2')
+groups=(ovios-cluster)
+#source=("https://github.com/ClusterLabs/$pkgname/archive/$pkgver.tar.gz")
+source=(pcs-$pkgver.tar.gz
+	pcs-py3_ovios.patch)
+
+
+build() {
+  cd $pkgname-$pkgver
+  patch -Np1 < ../pcs-py3_ovios.patch
+  make
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR=${pkgdir} install
+}

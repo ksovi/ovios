@@ -1,0 +1,32 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=ninja
+pkgver=1.10.2
+pkgrel=1 
+pkgdesc="Ninja is a small build system with a focus on speed." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.gz)
+
+build() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	export NINJAJOBS=4
+	sed -i '/int Guess/a \
+	  int   j = 0;\
+	  char* jobs = getenv( "NINJAJOBS" );\
+	  if ( jobs != NULL ) j = atoi( jobs );\
+	  if ( j > 0 ) return j;\
+	' src/ninja.cc
+}
+
+package() { 
+        cd "$srcdir/$pkgname-$pkgver"
+		python3 configure.py --bootstrap
+		mkdir -p ${pkgdir}/usr/bin/
+		install -vm755 ninja ${pkgdir}/usr/bin/
+                mkdir -p ${pkgdir}/usr/share/bash-completion/completions
+                mkdir -p ${pkgdir}/usr/share/zsh/site-functions/
+		install -vDm644 misc/bash-completion ${pkgdir}/usr/share/bash-completion/completions/ninja
+		install -vDm644 misc/zsh-completion  ${pkgdir}/usr/share/zsh/site-functions/_ninja
+}

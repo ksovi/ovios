@@ -1,0 +1,29 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=curl
+pkgver=7.82.0
+pkgrel=1
+arch=('x86_64')
+
+groups=('ovios')
+
+source=(${pkgname}-${pkgver}.tar.xz)
+
+build() {
+   cd $pkgname-$pkgver
+   ./configure --prefix=/usr          \
+            --disable-static           \
+            --with-openssl             \
+            --enable-threaded-resolver   \
+            --with-ca-path=/etc/ssl/certs 
+	make
+}
+
+package() {
+    cd $pkgname-$pkgver
+    make DESTDIR="$pkgdir" install
+    rm -rf docs/examples/.deps
+	find docs \( -name Makefile\* -o -name \*.1 -o -name \*.3 \) -exec rm {} \;
+	install -v -d -m755 /usr/share/doc/curl-${pkgver}
+	cp -v -R docs/*     /usr/share/doc/curl-${pkgver}
+}
+

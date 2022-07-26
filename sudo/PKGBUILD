@@ -1,0 +1,27 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=sudo
+pkgver=1.9.10
+pkgrel=1
+groups=(ovios)
+pkgdesc='The Sudo package allows a system administrator to give certain users (or groups of users) the ability to run some (or all) commands as root or another user while logging the commands and arguments.'
+arch=('x86_64')
+
+source=(ftp://ftp.sudo.ws/pub/sudo/sudo-${pkgver}.tar.gz)
+
+build() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+  ./configure --prefix=/usr              \
+            --libexecdir=/usr/lib      \
+            --with-secure-path         \
+            --with-all-insults         \
+            --with-env-editor          \
+            --docdir=/usr/share/doc/sudo-${pkgver} \
+            --with-passprompt="[sudo] password for %p: "
+  make
+}
+
+package() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+  make DESTDIR="$pkgdir" install
+  ln -sfv libsudo_util.so.0.0.0 ${pkgdir}/usr/lib/sudo/libsudo_util.so.0
+}

@@ -1,0 +1,25 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=dhcpcd
+pkgver=9.4.1
+pkgrel=1  
+pkgdesc="dhcpcd is an implementation of the DHCP client specified in RFC2131"
+arch=(x86_64)  
+source=(https://roy.marples.name/downloads/dhcpcd/dhcpcd-${pkgver}.tar.xz)
+group=(ovios)
+install=dhcpcd.install
+
+build() {  
+	cd ${pkgname}-${pkgver}  
+	./configure --prefix=/usr                \
+            --sysconfdir=/etc            \
+            --libexecdir=/usr/lib/dhcpcd \
+            --dbdir=/var/lib/dhcpcd      \
+            --runstatedir=/run           \
+            --privsepuser=dhcpcd
+	make
+}
+
+package() {  
+	cd ${pkgname}-${pkgver} 
+	make DESTDIR=${pkgdir} install  
+}  

@@ -1,0 +1,21 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=autoconf
+pkgver=2.71
+pkgrel=1 
+pkgdesc="programs for producing shell scripts that can automatically configure source code." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.xz)
+
+build() { 
+        cd "$srcdir/$pkgname-$pkgver"
+		./configure --prefix=/usr
+        make
+}
+
+package() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+        make DESTDIR="$pkgdir" install
+}

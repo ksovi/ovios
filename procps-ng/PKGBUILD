@@ -1,0 +1,25 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=procps-ng
+_pkgname=procps
+pkgver=3.3.17
+pkgrel=1
+pkgdesc="The Procps-ng package contains programs for monitoring processes." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.xz)
+
+build() { 
+    cd "$srcdir/$_pkgname-$pkgver"
+	./configure --prefix=/usr                            \
+            --docdir=/usr/share/doc/${pkgname}-${pkgver}  \
+            --disable-static                         \
+            --disable-kill
+	make
+}
+
+package() { 
+    cd "$srcdir/$_pkgname-$pkgver"
+	make DESTDIR=${pkgdir} install
+}

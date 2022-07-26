@@ -1,0 +1,23 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+groups=(ovios)
+pkgname=python-pyparsing
+pkgver=3.0.8
+pkgrel=1
+pkgdesc='General parsing module for Python'
+arch=('any')
+url='https://github.com/pyparsing/pyparsing/'
+license=('MIT')
+
+source=("https://github.com/pyparsing/pyparsing/archive/pyparsing_$pkgver.tar.gz")
+
+build() {
+  cd pyparsing-pyparsing_$pkgver
+  python -m build -nw
+}
+
+
+package() {
+  cd pyparsing-pyparsing_$pkgver
+  python -m installer --destdir="$pkgdir" dist/*.whl
+  install -Dm644 LICENSE -t "$pkgdir"/usr/share/licenses/$pkgname/
+}

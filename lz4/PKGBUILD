@@ -1,0 +1,40 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=lz4
+epoch=1
+pkgver=1.9.3
+pkgrel=2
+pkgdesc='Extremely fast compression algorithm'
+arch=('x86_64')
+url='http://www.lz4.org/'
+license=('GPL2')
+groups=(ovios)
+
+source=("https://github.com/lz4/lz4/archive/refs/tags/v${pkgver}.tar.gz"
+        'https://github.com/lz4/lz4/commit/8301a21773ef61656225e264f4f06ae14462bca7.patch')
+
+prepare() {
+  cd $pkgname-${pkgver}
+  # apply patch from the source array (should be a pacman feature)
+  local src
+  for src in "${source[@]}"; do
+    src="${src%%::*}"
+    src="${src##*/}"
+    [[ $src = *.patch ]] || continue
+    msg2 "Applying patch $src..."
+    patch -Np1 < "../$src"
+  done
+}
+
+build() {
+  # do not use the main makefile, it calls sub make with -e
+  # exported CLFAGS by makepkg break the version. see FS#50071
+  cd $pkgname-${pkgver}
+  make -C lib PREFIX=/usr
+  make -C programs PREFIX=/usr lz4 lz4c
+}
+
+package() {
+  cd $pkgname-${pkgver}
+  make install PREFIX=/usr DESTDIR="$pkgdir"
+}
+

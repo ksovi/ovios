@@ -1,0 +1,19 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=parted
+pkgver=3.4
+pkgrel=1
+arch=(x86_64)
+source=(ftp://ftp.gnu.org/gnu/parted/parted-${pkgver}.tar.xz)
+groups=(ovios)
+
+build() {
+cd $pkgname-$pkgver
+./configure --prefix=/usr \
+        --disable-static
+make
+}
+
+package() {
+cd $pkgname-$pkgver
+make DESTDIR=${pkgdir} install
+}

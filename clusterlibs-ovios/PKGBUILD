@@ -1,0 +1,15 @@
+pkgname=clusterlibs-ovios
+pkgver=1.0
+pkgrel=1
+arch=(x86_64)
+source=(clusterlibs-ovios.tar.gz)
+groups=(ovios)
+depends=(liburing)
+
+package() {
+cd $pkgname
+  mkdir -p ${pkgdir}/usr/lib/
+  cp libcrypto.so.1.1 ${pkgdir}/usr/lib/
+  cp libssl.so.1.1 ${pkgdir}/usr/lib/
+}
+

@@ -1,0 +1,44 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=corosync
+pkgver=3.1.6
+pkgrel=1
+pkgdesc="Cluster engine for nodal communications systems with high availability features."
+arch=('i686' 'x86_64')
+url="http://www.corosync.org/"
+license=('BSD')
+groups=(ovios-cluster)
+
+source=("$pkgname-$pkgver.tar.gz::https://github.com/corosync/$pkgname/archive/v$pkgver.tar.gz")
+
+prepare() {
+  cd ${pkgname}-${pkgver}
+  echo ${pkgver} >.tarball-version
+  GIT_DIR=`pwd`/.git ./autogen.sh
+}
+build() {
+  cd ${pkgname}-${pkgver}
+  GIT_DIR=`pwd`/.git ./configure --sbindir=/usr/sbin \
+              --sysconfdir=/etc \
+              --libdir=/usr/lib \
+              --localstatedir=/var \
+              --enable-dbus \
+              --enable-monitoring \
+              --enable-watchdog \
+	      --disable-systemd  \
+              --disable-upstart \
+              --enable-snmp \
+              --enable-xmlconf \
+	      --enable-qnetd \
+              --enable-qdevices 
+			  
+  # Fight unused direct deps
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0 /g' -e 's/    if test "$export_dynamic" = yes && test -n "$export_dynamic_flag_spec"; then/      func_append compile_command " -Wl,-O1,--as-needed"\n      func_append finalize_command " -Wl,-O1,--as-needed"\n\0/' libtool
+  make V=0
+}
+
+package() {
+  cd ${pkgname}-${pkgver}
+  make DESTDIR="${pkgdir}" install
+  rm -rf ${pkgdir}/etc/dbus-1/
+  rm -rf ${pkgdir}/etc/init.d/
+}

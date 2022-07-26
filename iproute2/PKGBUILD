@@ -1,0 +1,25 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=iproute2
+pkgver=5.16.0
+pkgrel=1
+pkgdesc="The IPRoute2 package contains programs for basic and advanced IPV4-based networking." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.xz)
+
+build() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	sed -i /ARPD/d Makefile
+	rm -fv man/man8/arpd.8
+	make
+}
+
+package() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	make DESTDIR=${pkgdir} SBINDIR=/usr/sbin install
+    # libnetlink isn't installed, install it FS#19385
+    install -Dm0644 include/libnetlink.h "${pkgdir}/usr/include/libnetlink.h"
+    install -Dm0644 lib/libnetlink.a "${pkgdir}/usr/lib/libnetlink.a"
+}

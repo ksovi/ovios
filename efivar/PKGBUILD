@@ -1,0 +1,28 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=efivar
+pkgver=38
+pkgrel=1
+arch=(x86_64)
+source=(https://github.com/rhboot/efivar/releases/download/${pkgver}/efivar-${pkgver}.tar.bz2
+	"${pkgname}-38-ld_t.patch::https://github.com/rhboot/efivar/pull/201/commits/197a0874ea4010061b98b4b55eff65b33b1cd741.patch")
+groups=('ovios')
+
+prepare() {
+      cd "${pkgname}-${pkgver}"
+      # fix issues with linker scripts: https://github.com/rhboot/efivar/pull/201
+      patch -Np1 -i ../"${pkgname}-38-ld_t.patch"
+}
+
+build() {
+        make ERRORS='' all -C "${pkgname}-${pkgver}"
+}
+
+package() {
+	make DESTDIR="${pkgdir}/" \
+           libdir=/usr/lib/ \
+           bindir=/usr/bin/ \
+           mandir=/usr/share/man/ \
+           includedir=/usr/include/ \
+           install -j1 V=1 \
+           -C "${pkgname}-${pkgver}"
+}

@@ -1,0 +1,18 @@
+pkgname=basefiles-ovios
+pkgver=1.0
+pkgrel=1
+arch=(x86_64)
+source=(basefiles-ovios.tar.gz)
+groups=(ovios)
+
+package() {
+cd $pkgname
+  mkdir -p ${pkgdir}/etc/
+  cp profile  ${pkgdir}/etc/profile
+  cp fstab  ${pkgdir}/etc/fstab
+  cp passwd ${pkgdir}/etc/passwd
+  cp group ${pkgdir}/etc/group
+  cp inittab ${pkgdir}/etc/inittab
+  cp hosts ${pkgdir}/etc/hosts
+}
+

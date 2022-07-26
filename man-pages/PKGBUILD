@@ -1,0 +1,16 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=man-pages
+pkgver=5.13 
+pkgrel=1 
+pkgdesc="This package contains over 1,900 man pages." 
+arch=(any) 
+url="http://www.kernel.org/doc/man-pages" 
+groups=(ovios) 
+#source=(https://www.kernel.org/pub/linux/docs/man-pages/$pkgname-$pkgver.tar.xz)
+source=('man-pages-5.13.tar.xz')
+
+package() { 
+        cd "$srcdir/$pkgname-$pkgver"  
+        make DESTDIR="$pkgdir" prefix=/usr install 
+}
+

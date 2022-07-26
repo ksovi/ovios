@@ -1,0 +1,27 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=pciutils
+pkgver=3.7.0
+pkgrel=1
+arch=(x86_64)
+source=(https://www.kernel.org/pub/software/utils/pciutils/pciutils-${pkgver}.tar.xz)
+
+groups=(ovios)
+pkgdesc="The PCI Utils package contains a set of programs for listing PCI devices, inspecting their status and setting their configuration registers."
+
+build() {
+    cd $pkgname-$pkgver
+    make PREFIX=/usr                \
+     SHAREDIR=/usr/share/hwdata \
+     SHARED=yes 
+    make
+}
+
+package() {
+	cd $pkgname-$pkgver
+	make PREFIX=/usr                \
+		 SHAREDIR=/usr/share/hwdata \
+		 SHARED=yes                 \
+		 DESTDIR=${pkgdir} install install-lib 
+
+	chmod -v 755 ${pkgdir}/usr/lib/libpci.so
+}

@@ -1,0 +1,24 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=lksctp-tools
+pkgver=1.0.19
+pkgrel=1
+pkgdesc='An implementation of the SCTP protocol'
+arch=('x86_64')
+url='https://github.com/sctp/lksctp-tools'
+license=('GPL2' 'LGPL2.1')
+groups=(ovios-dev)
+source=("git+https://github.com/sctp/lksctp-tools.git#tag=v$pkgver")
+
+build() {
+  cd $pkgname
+  ./bootstrap
+  ./configure --prefix=/usr
+  make
+}
+
+
+package() {
+  cd $pkgname
+  make DESTDIR="$pkgdir" install
+}
+

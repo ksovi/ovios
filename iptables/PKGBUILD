@@ -1,0 +1,21 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=iptables
+pkgver=1.8.7
+pkgrel=1
+pkgdesc="iptables is a userspace command line program used to configure the Linux 2.4 and later kernel packet filtering ruleset"
+arch=(any)
+groups=(ovios)
+source=(http://www.netfilter.org/projects/iptables/files/iptables-${pkgver}.tar.bz2)
+
+
+build(){
+	cd "${srcdir}/${pkgname}-${pkgver}"
+	./configure --prefix=/usr --disable-nftables --enable-libipq
+	make
+}
+
+package(){
+	cd "${srcdir}/${pkgname}-${pkgver}"
+	make DESTDIR="${pkgdir}" install
+}
+

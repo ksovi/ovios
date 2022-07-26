@@ -1,0 +1,31 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=man-db 
+pkgver=2.10.1
+pkgrel=1
+pkgdesc="The Man-DB package contains programs for finding and viewing man pages." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.xz)
+
+build() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	./configure --prefix=/usr                         \
+            --docdir=/usr/share/doc/man-db-2.10.1 \
+            --sysconfdir=/etc                     \
+            --disable-setuid                      \
+            --enable-cache-owner=bin              \
+            --with-browser=/usr/bin/lynx          \
+            --with-vgrind=/usr/bin/vgrind         \
+            --with-grap=/usr/bin/grap             \
+            --with-systemdtmpfilesdir=            \
+            --with-systemdsystemunitdir=
+	make
+}
+
+package() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	make DESTDIR=${pkgdir} install
+}
+

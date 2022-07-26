@@ -1,0 +1,29 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=p11-kit
+pkgver=0.24.1
+pkgrel=1
+pkgdesc="The p11-kit package provides a way to load and enumerate PKCS #11 (a Cryptographic Token Interface Standard) modules"
+source=(${pkgname}-${pkgver}.tar.xz
+	trust-extract-compat)
+arch=(any)
+
+build() {
+   cd ${pkgname}-${pkgver}
+   mkdir p11-build 
+   cd p11-build
+   meson --prefix=/usr       \
+      --buildtype=release \
+      -Dtrust_paths=/etc/pki/anchors
+   ninja 
+}
+ 
+package() {
+   cd ${pkgname}-${pkgver}/p11-build
+   DESTDIR="$pkgdir" ninja install
+   mkdir -p ${pkgdir}/usr/lib/
+   mkdir -p ${pkgdir}/usr/libexec/p11-kit
+   cp ../../trust-extract-compat  ${pkgdir}/usr/libexec/p11-kit/
+   ln -sfv ${pkgdir}/usr/libexec/p11-kit/trust-extract-compat \
+        ${pkgdir}/usr/bin/update-ca-certificates
+   ln -sfv ${pkgdir}/usr/lib/pkcs11/p11-kit-trust.so ${pkgdir}/usr/lib/libnssckbi.so
+}

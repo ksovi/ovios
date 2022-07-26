@@ -1,0 +1,22 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=check
+pkgver=0.15.2
+pkgrel=1
+pkgdesc="Check is a unit testing framework for C." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.gz)
+
+build() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	./configure \
+        	--prefix=/usr --disable-static
+    make
+}
+
+package() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	make DESTDIR=${pkgdir} docdir=/usr/share/doc/check-${pkgver} install
+}

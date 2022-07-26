@@ -1,0 +1,24 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=attr
+pkgver=2.5.1
+pkgrel=1
+pkgdesc="The attr package contains utilities to administer the extended attributes on filesystem objects"
+
+arch=('any') 
+groups=(ovios) 
+source=(${pkgname}-${pkgver}.tar.gz)
+
+build() { 
+	cd $srcdir/$pkgname-$pkgver
+	./configure --prefix=/usr    \
+            --disable-static \
+			--sysconfdir=/etc  \
+            --docdir=/usr/share/doc/${pkgname}-${pkgver}
+	make
+} 
+ 
+package() { 
+  cd $srcdir/$pkgname-$pkgver
+  
+  make DESTDIR=$pkgdir install
+}

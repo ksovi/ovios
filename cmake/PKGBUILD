@@ -1,0 +1,25 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=cmake
+pkgdesc="The CMake package contains a modern toolset used for generating Makefiles."
+pkgver=3.23.0
+pkgrel=1
+arch=(x86_64)
+source=(https://cmake.org/files/v3.23/cmake-3.23.0.tar.gz)
+groups=(ovios)
+depends=(libuv)
+build() {
+cd $pkgname-$pkgver
+	sed -i '/"lib64"/s/64//' Modules/GNUInstallDirs.cmake &&
+
+	./bootstrap --prefix=/usr        \
+            --system-libs        \
+            --mandir=/share/man  \
+            --no-system-jsoncpp  \
+            --no-system-librhash \
+            --docdir=/share/doc/cmake-${pkgver}
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR=${pkgdir} install
+}

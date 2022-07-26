@@ -1,0 +1,20 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=libnsl
+pkgver=2.0.0
+pkgrel=1
+arch=('x86_64')
+groups=(ovios)
+pkgdesc="The libnsl package contains the public client interface for NIS(YP). It replaces the NIS library that used to be in glibc"
+source=(https://github.com/thkukuk/libnsl/releases/download/v${pkgver}/libnsl-${pkgver}.tar.xz)
+
+build() {
+  cd "${pkgname}"-${pkgver}
+  ./configure --sysconfdir=/etc --disable-static
+  make
+}
+
+
+package() {
+    cd "${pkgname}"-${pkgver}
+	make DESTDIR="${pkgdir}" install
+}

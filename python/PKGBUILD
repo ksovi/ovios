@@ -1,0 +1,26 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=python
+pkgver=3.10.2
+pkgrel=1 
+pkgdesc="The Python 3 package contains the Python development environment." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=(Python-$pkgver.tar.xz)
+
+build() { 
+    cd "$srcdir/Python-$pkgver"
+	./configure --prefix=/usr        \
+            --enable-shared      \
+            --with-system-expat  \
+            --with-system-ffi    \
+            --with-ensurepip=yes \
+            --enable-optimizations
+    make
+}
+
+package() { 
+        cd "$srcdir/Python-$pkgver"
+	make DESTDIR="$pkgdir" install
+}

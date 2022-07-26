@@ -1,0 +1,42 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=shadow 
+pkgver=4.11.1 
+pkgrel=1 
+pkgdesc="Programs for handling passwords in a secure way." 
+arch=(i686 x86_64) 
+url=" http://pkg-shadow.alioth.debian.org/ " 
+license=('BSD') 
+groups=(ovios) 
+install shadow.install 
+backup=(etc/default/useradd  
+        etc/limits  
+        etc/login.access  
+        etc/login.defs)
+source=($pkgname-$pkgver.tar.xz)
+ 
+build() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+		
+		sed -i 's/groups$(EXEEXT) //' src/Makefile.in
+		find man -name Makefile.in -exec sed -i 's/groups\.1 / /'   {} \;
+		find man -name Makefile.in -exec sed -i 's/getspnam\.3 / /' {} \;
+		find man -name Makefile.in -exec sed -i 's/passwd\.5 / /'   {} \;
+
+		sed -e 's:#ENCRYPT_METHOD DES:ENCRYPT_METHOD SHA512:' \
+			-e 's:/var/spool/mail:/var/mail:'                 \
+			-e '/PATH=/{s@/sbin:@@;s@/bin:@@}'                \
+			-i etc/login.defs
+
+ 
+        ./configure --sysconfdir=/etc \
+		    --with-group-name-max-length=32 \
+		    --disable-static
+        make 
+} 
+ 
+package() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+        make DESTDIR="$pkgdir" exec_prefix=/usr install  
+        make DESTDIR="$pkgdir" -C man install-man
+}
+

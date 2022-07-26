@@ -1,0 +1,26 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+groups=(ovios)
+pkgname=python-ptyprocess
+_pkgname=ptyprocess
+pkgver=0.7.0
+pkgrel=1
+pkgdesc="Run a subprocess in a pseudo terminal"
+url="https://github.com/pexpect/ptyprocess"
+arch=('any')
+license=('ISC')
+
+source=("https://pypi.io/packages/source/p/$_pkgname/$_pkgname-$pkgver.tar.gz"
+        LICENSE)
+
+
+prepare() {
+  cd "$srcdir"
+  cp -r $_pkgname-$pkgver ${_pkgname}2-$pkgver
+  #mv "LIC-pty-$pkgver" LICENSE
+}
+
+package() {
+  cd "$srcdir/$_pkgname-$pkgver"
+  python3 setup.py install --root="$pkgdir/" --prefix=/usr --optimize=0
+  install -Dm644 "$srcdir/LICENSE" "$pkgdir/usr/share/licenses/python-$_pkgname/LICENSE"
+}

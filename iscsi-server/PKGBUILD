@@ -1,0 +1,30 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=iscsi-server
+pkgver=1.0.82
+pkgrel=2
+arch=(any)
+pkgdesc="iSCSI Target STGT for OviOS Linux"
+url="http://stgt.sourceforge.net/"
+license=('GPL')
+groups=(ovios)
+backup=('etc/tgt/targets.conf')
+source=(https://github.com/fujita/tgt/archive/refs/tags/v${pkgver}.tar.gz
+	iscsi-server_ovios.patch
+	tgt-ovadmin
+	tgt-ovsetup)
+
+build() {
+  cd "$srcdir/tgt-$pkgver"
+  patch -Np1 -i ../iscsi-server_ovios.patch
+  make sbindir=/usr/sbin ISCSI=1 PREFIX="$pkgdir"
+}
+
+package() {
+  cd "$srcdir/tgt-$pkgver"
+  mkdir -p  ${pkgdir}/usr/lib
+  mkdir -p  ${pkgdir}/usr/sbin/
+  cp ../tgt-ovadmin scripts/
+  cp ../tgt-ovsetup scripts/
+  make DESTDIR="$pkgdir" sbindir=/usr/sbin install
+}
+

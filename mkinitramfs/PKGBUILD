@@ -1,0 +1,18 @@
+pkgname=mkinitramfs-ovios
+pkgver=1.0
+pkgrel=1
+arch=(x86_64)
+source=(mkinitramfs-ovios.tar.gz)
+groups=(ovios)
+
+
+package() {
+cd $pkgname
+  mkdir -p ${pkgdir}/usr/share/mkinitramfs
+  mkdir -p ${pkgdir}/usr/bin/
+  mkdir -p ${pkgdir}/usr/sbin/
+  cp mkinitramfs ${pkgdir}/usr/sbin/
+  cp busybox ${pkgdir}/usr/bin/
+  cp init.in ${pkgdir}/usr/share/mkinitramfs/
+}
+

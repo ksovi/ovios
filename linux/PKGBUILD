@@ -1,0 +1,155 @@
+# Maintainer: Ovi chis <ovi@ovios.org>
+pkgbase=linux
+_srcname=linux-5.17.4
+_basekernel=5.17
+_basever=
+pkgver=5.17.4
+pkgrel=1
+arch=(x86_64)
+groups=('ovios')
+source=(
+#"https://www.kernel.org/pub/linux/kernel/v5.x/${_srcname}.tar.{xz,sign}"
+#"https://www.kernel.org/pub/linux/kernel/v5.x/patch-${pkgver}.{xz,sign}"
+linux-${pkgver}.tar.xz
+#linux-${pkgver}.tar.sign
+#patch-${pkgver}.xz
+aufs5-standalone.patch
+aufs5-mmap.patch
+aufs5-loopback.patch
+aufs5-kbuild.patch
+aufs5-base.patch
+vfs-ino.patch
+tmpfs-idr.patch
+proc_mounts.patch
+lockdep-debug.patch
+)
+options=(!strip)
+_kernelname=OVIOS-${pkgver}
+prepare() {
+    cd "${srcdir}/${_srcname}"
+    cat  ../../config.aufs >> ../../kernelconfig
+    cp -arv ../../aufs5-standalone-aufs5.17.3/fs/aufs/ fs/
+    cp ../../kernelconfig .config
+    #patch -p1 -i "${srcdir}/patch-${pkgver}"
+    local src
+    ksource=(aufs5-kbuild.patch aufs5-base.patch aufs5-mmap.patch aufs5-standalone.patch aufs5-loopback.patch \
+            vfs-ino.patch )
+    for src in "${ksource[@]}"; do
+      src="${src%%::*}"
+      src="${src##*/}"
+      [[ $src = *.patch ]] || continue
+      echo -e "\t ====>>>  Applying patch: $src..."
+      patch -Np1 < "../$src"
+    done
+    cp -r  ../../aufs5-standalone-aufs5.17.3/{Documentation,fs} ./
+    cp -r ../../aufs5-standalone-aufs5.17.3/include/uapi/linux/aufs_type.h ./include/uapi/linux/aufs_type.h
+}
+build() {
+    cd "${srcdir}/${_srcname}"
+    #make mrproper
+    make nconfig
+    make
+}
+_package() {
+    cd "${srcdir}/${_srcname}"
+    mkdir -p ${pkgdir}/{usr/lib/modules,usr/lib/firmware,boot}
+    make INSTALL_MOD_PATH=${pkgdir}/usr modules_install
+    cp arch/x86_64/boot/bzImage ${pkgdir}/boot/vmlinuz-${pkgname}
+    cp System.map ${pkgdir}/boot/System.map
+    cp .config ${pkgdir}/boot/config-$pkgname-$pkgver
+    rm "${pkgdir}"/usr/lib/modules/$pkgver-OVIOS/{source,build}
+    #rm -rf "${pkgdir}/usr/lib/firmware"
+    # copy the sources
+    #cp -ax "${srcdir}/${_srcname}" "${pkgdir}"/usr/lib/modules/$pkgver-OVIOS/build
+    mkdir -p "${pkgdir}"/usr/lib/modules/$pkgver-OVIOS/build
+    #ln -s "${srcdir}/${_srcname}" "${pkgdir}"/usr/lib/modules/$pkgver-OVIOS/build
+    cp arch/x86_64/boot/bzImage "${pkgdir}"/usr/lib/modules/$pkgver-OVIOS/build/vmlinuz
+    /sbin/depmod -b ${pkgdir}/usr -F System.map $pkgver-OVIOS
+    install -D -m644 vmlinux ${pkgdir}/usr/lib/modules/$pkgver-OVIOS/build/vmlinux-ovios
+}
+
+_package-sources() {
+    cd "${srcdir}/${_srcname}"
+        local builddir="$pkgdir/usr/lib/modules/$pkgver-OVIOS/build"
+
+          echo "Installing build files..."
+          install -Dt "$builddir" -m644 .config Makefile Module.symvers System.map \
+                vmlinux
+          install -Dt "$builddir/kernel" -m644 kernel/Makefile
+          install -Dt "$builddir/arch/x86" -m644 arch/x86/Makefile
+          cp -t "$builddir" -a scripts
+
+          # required when STACK_VALIDATION is enabled
+          install -Dt "$builddir/tools/objtool" tools/objtool/objtool
+
+          echo "Installing sources..."
+          cp -t "$builddir" -a include
+          cp -t "$builddir/arch/x86" -a arch/x86/include
+          install -Dt "$builddir/arch/x86/kernel" -m644 arch/x86/kernel/asm-offsets.s
+
+          install -Dt "$builddir/drivers/md" -m644 drivers/md/*.h
+          install -Dt "$builddir/net/mac80211" -m644 net/mac80211/*.h
+
+          # https://bugs.archlinux.org/task/13146
+          install -Dt "$builddir/drivers/media/i2c" -m644 drivers/media/i2c/msp3400-driver.h
+
+          # https://bugs.archlinux.org/task/20402
+          install -Dt "$builddir/drivers/media/usb/dvb-usb" -m644 drivers/media/usb/dvb-usb/*.h
+          install -Dt "$builddir/drivers/media/dvb-frontends" -m644 drivers/media/dvb-frontends/*.h
+
+          # https://bugs.archlinux.org/task/71392
+          install -Dt "$builddir/drivers/iio/common/hid-sensors" -m644 drivers/iio/common/hid-sensors/*.h
+
+          echo "Installing KConfig files..."
+          find . -name 'Kconfig*' -exec install -Dm644 {} "$builddir/{}" \;
+
+          echo "Removing unneeded architectures..."
+          local arch
+          for arch in "$builddir"/arch/*/; do
+                [[ $arch = */x86/ ]] && continue
+                echo "Removing $(basename "$arch")"
+                rm -r "$arch"
+          done
+
+          echo "Removing documentation..."
+          rm -r "$builddir/Documentation"
+
+          echo "Removing broken symlinks..."
+          find -L "$builddir" -type l -printf 'Removing %P\n' -delete
+
+          echo "Removing loose objects..."
+          find "$builddir" -type f -name '*.o' -printf 'Removing %P\n' -delete
+
+          echo "Stripping build tools..."
+          local file
+          while read -rd '' file; do
+                case "$(file -bi "$file")" in
+                  application/x-sharedlib\;*)      # Libraries (.so)
+                        strip -v $STRIP_SHARED "$file" ;;
+                  application/x-archive\;*)        # Libraries (.a)
+                        strip -v $STRIP_STATIC "$file" ;;
+                  application/x-executable\;*)     # Binaries
+                        strip -v $STRIP_BINARIES "$file" ;;
+                  application/x-pie-executable\;*) # Relocatable binaries
+                        strip -v $STRIP_SHARED "$file" ;;
+                esac
+          done < <(find "$builddir" -type f -perm -u+x ! -name vmlinux -print0)
+
+          echo "Stripping vmlinux..."
+          strip -v $STRIP_STATIC "$builddir/vmlinux"
+
+          echo "Adding symlink..."
+          mkdir -p "$pkgdir/usr/src"
+          ln -sr "$builddir" "$pkgdir/usr/src/$pkgbase"
+}
+
+pkgname=("$pkgbase" "$pkgbase-sources")
+for _p in "${pkgname[@]}"; do
+  eval "package_$_p() {
+    $(declare -f "_package${_p#$pkgbase}")
+    _package${_p#$pkgbase}
+  }"
+done
+
+
+

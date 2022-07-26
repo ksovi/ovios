@@ -1,0 +1,48 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=fcron
+pkgver=3.2.1
+pkgrel=1
+pkgdesc="The Fcron package contains a periodical command scheduler which aims at replacing Vixie Cron"
+arch=(x86_64)
+source=(http://fcron.free.fr/archives/fcron-${pkgver}.src.tar.gz
+	systab.orig)
+build() {
+cd $pkgname-$pkgver
+	find doc -type f -exec sed -i 's:/usr/local::g' {} \;
+	./configure --prefix=/usr          \
+            --sysconfdir=/etc      \
+            --localstatedir=/var   \
+            --without-sendmail     \
+            --with-boot-install=no \
+            --with-systemdsystemunitdir=no
+	make
+}
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir/" install
+  install -Dm644 files/fcron.pam "$pkgdir/etc/pam.d/fcron"
+  install -Dm644 files/fcrontab.pam "$pkgdir/etc/pam.d/fcrontab"
+
+  # Install a default fcrontab so that fcron can completely replace dcron
+  # We don't use binary format which is incompatible between arch and may cause crash
+  # We regenerate the binary format at each update
+  install -Dm640 "$srcdir/systab.orig" "$pkgdir/var/spool/fcron/systab.orig"
+
+  # Add cron.* directories
+  install -d -m755 "$pkgdir/etc/cron.daily"
+  install -d -m755 "$pkgdir/etc/cron.hourly"
+  install -d -m755 "$pkgdir/etc/cron.monthly"
+  install -d -m755 "$pkgdir/etc/cron.weekly"
+
+  # remove docs
+  rm -r "$pkgdir/usr/share/doc"
+
+  # avoid conflict with filesystem>=2012.06
+  rm -rf "$pkgdir"/{var/,}run
+
+  # avoid conflict with libbsd - #31259
+  rm "$pkgdir/usr/share/man/man3/bitstring.3" \
+    "$pkgdir/usr/share/man/fr/man3/bitstring.3"
+  rmdir --ignore-fail-on-non-empty "$pkgdir/usr/share/man/man3" \
+    "$pkgdir/usr/share/man/fr/man3"
+}

@@ -1,0 +1,19 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=xz 
+pkgver=5.2.5
+pkgrel=1
+arch=(x86_64)
+source=(xz-${pkgver}.tar.xz)
+groups=(ovios)
+build() {
+cd $pkgname-$pkgver 
+    ./configure --prefix=/usr  \
+            --disable-static \
+            --docdir=/usr/share/doc/xz-${pkgver}
+    make
+} 
+ 
+package() {
+    cd $pkgname-$pkgver
+    make DESTDIR=${pkgdir} install
+}

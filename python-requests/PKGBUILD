@@ -1,0 +1,31 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=python-requests
+pkgver=2.27.1
+pkgrel=1
+pkgdesc="Python HTTP for Humans"
+arch=('any')
+url="http://python-requests.org"
+license=('Apache')
+source=("$pkgname-$pkgver.tar.gz"
+        certs.patch)
+
+prepare() {
+  cd requests-$pkgver
+  # Stay with chardet for now: https://github.com/psf/requests/issues/5871
+  sed -e '/certifi/d' \
+      -e "s/,<.*'/'/" \
+      -e '/charset_normalizer/d' \
+      -i setup.py
+  patch -p1 -i "$srcdir"/certs.patch
+}
+
+build() {
+  cd requests-$pkgver
+  python setup.py build
+}
+
+
+package() {
+  cd requests-$pkgver
+  python setup.py install --skip-build -O1 --root="$pkgdir"
+}

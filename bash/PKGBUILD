@@ -1,0 +1,24 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=bash 
+pkgver=5.1.16
+pkgrel=1 
+pkgdesc="The Bourne-Again SHell." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.gz)
+
+build() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+		./configure --prefix=/usr               \
+            --docdir=/usr/share/doc/bash-5.1.16 \
+            --without-bash-malloc              \
+            --with-installed-readline 
+        make
+}
+
+package() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+        make DESTDIR="$pkgdir" install
+}

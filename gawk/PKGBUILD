@@ -1,0 +1,24 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=gawk
+pkgver=5.1.1
+pkgrel=1
+pkgdesc="The Gawk package contains programs for manipulating text files." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.xz)
+
+build() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	sed -i 's/extras//' Makefile.in
+	./configure --prefix=/usr
+	make
+}
+
+package() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	make DESTDIR=${pkgdir} install
+	mkdir -pv  ${pkgdir}/usr/share/doc/gawk-${pkgver}
+	cp -v doc/{awkforai.txt,*.{eps,pdf,jpg}} ${pkgdir}/usr/share/doc/gawk-${pkgver}
+}

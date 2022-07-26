@@ -1,0 +1,20 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=python-cryptography
+pkgver=36.0.2
+pkgrel=1
+pkgdesc="A package designed to expose cryptographic recipes and primitives to Python developers"
+arch=('x86_64')
+license=('Apache')
+url="https://pypi.python.org/pypi/cryptography"
+
+source=("https://pypi.io/packages/source/c/cryptography/cryptography-$pkgver.tar.gz")
+
+build() {
+  cd cryptography-$pkgver
+  python setup.py build
+}
+
+package() {
+  cd cryptography-$pkgver
+  python setup.py install --root="$pkgdir" --optimize=1 --skip-build
+}

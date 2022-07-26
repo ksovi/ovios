@@ -1,0 +1,26 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=vim 
+pkgver=8.2.4383
+pkgrel=1
+pkgdesc="The powerful VIM editor." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.gz
+vimrc.ovios)
+backup=(etc/vimrc)
+build() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	echo '#define SYS_VIMRC_FILE "/etc/vimrc"' >> src/feature.h
+	./configure --prefix=/usr
+	make
+}
+
+package() { 
+    cd "$srcdir/$pkgname-$pkgver"
+    make DESTDIR=${pkgdir} install
+    ln -sv vim ${pkgdir}/usr/bin/vi
+    mkdir -p ${pkgdir}/etc
+    cp ../../vimrc.ovios ${pkgdir}/etc/vimrc
+}

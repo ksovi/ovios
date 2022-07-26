@@ -1,0 +1,24 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=expat 
+pkgver=2.4.6
+pkgrel=1 
+pkgdesc="The Expat package contains a stream oriented C library for parsing XML." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.xz)
+
+build() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+		./configure --prefix=/usr --docdir=/usr/share/doc/${pkgname}-${pkgver} \
+		--disable-static
+        make
+}
+
+package() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+        make DESTDIR="$pkgdir" install
+		mkdir -p ${pkgdir}/usr/share/doc/
+		install -v -m644 doc/*.{html,css} ${pkgdir}/usr/share/doc/${pkgname}-${pkgver}
+}

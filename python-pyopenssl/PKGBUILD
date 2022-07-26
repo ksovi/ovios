@@ -1,0 +1,25 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=python-pyopenssl
+pkgver=22.0.0
+pkgrel=1
+arch=('any')
+pkgdesc="Python3 wrapper module around the OpenSSL library"
+url='https://github.com/pyca/pyopenssl'
+license=('Apache')
+
+source=(https://github.com/pyca/pyopenssl/archive/$pkgver/$pkgname-$pkgver.tar.gz)
+
+
+prepare() {
+  export LC_CTYPE=en_US.UTF-8
+}
+
+build() {
+  cd pyopenssl-$pkgver
+  python setup.py build
+}
+
+package() {
+  cd pyopenssl-$pkgver
+  python setup.py install --root="$pkgdir" --optimize=1 --skip-build
+}

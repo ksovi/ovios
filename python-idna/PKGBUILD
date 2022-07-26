@@ -1,0 +1,26 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=python-idna
+pkgver=3.3
+pkgrel=4
+pkgdesc="Internationalized Domain Names in Applications (IDNA)"
+arch=('any')
+license=('BSD')
+url="https://github.com/kjd/idna"
+
+source=("https://pypi.io/packages/source/i/idna/idna-$pkgver.tar.gz")
+
+
+prepare() {
+   rm -r idna-$pkgver/*.egg-info
+}
+
+build() {
+   cd idna-$pkgver
+   python setup.py build
+}
+ 
+package() {
+   cd idna-$pkgver
+   python setup.py install --root="$pkgdir" --optimize=1 --skip-build
+   install -Dm644 LICENSE.md -t "$pkgdir"/usr/share/licenses/$pkgname/
+}

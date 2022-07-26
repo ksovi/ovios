@@ -1,0 +1,27 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=openssl
+pkgver=3.0.1
+pkgrel=1 
+pkgdesc="The OpenSSL package contains management tools and libraries relating to cryptography." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.gz)
+
+build() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	./config --prefix=/usr     \
+         --openssldir=/etc/ssl \
+         --libdir=lib          \
+         shared                \
+         zlib-dynamic
+    make
+}
+
+package() { 
+        cd "$srcdir/$pkgname-$pkgver"
+		sed -i '/INSTALL_LIBS/s/libcrypto.a libssl.a//' Makefile
+        make DESTDIR="$pkgdir" MANSUFFIX=ssl install
+		mv -v ${pkgdir}/usr/share/doc/openssl ${pkgdir}/usr/share/doc/openssl-${pkgver}
+}

@@ -1,0 +1,39 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=resource-agents
+pkgver=4.10.0
+pkgrel=2
+pkgdesc="OCF resource agents for rgmanager and pacemaker"
+arch=('i686' 'x86_64')
+url='http://clusterlabs.org/'
+license=('GPL2')
+groups=(ovios-cluster)
+#source=("$pkgname-$pkgver.tar.gz::https://github.com/ClusterLabs/$pkgname/archive/v$pkgver.tar.gz")
+source=($pkgname-$pkgver.tar.gz)
+prepare() {
+  cd $pkgname-$pkgver
+  sed -i -e '/size=%zu/s,devsize,(size_t)devsize,' \
+      tools/storage_mon.c
+  sed -i -e '/read %ld bytes/s,sizeof,(long)sizeof,' \
+      tools/storage_mon.c
+  ./autogen.sh
+}
+
+build() {
+  cd $pkgname-$pkgver
+  PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/lib64/pkgconfig ./configure --prefix=/usr \
+              --bindir=/usr/bin \
+              --sbindir=/usr/sbin \
+              --libdir=/usr/lib \
+              --libexecdir=/usr/lib \
+              --sysconfdir=/etc \
+              --localstatedir=/var
+  make V=0
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="${pkgdir}" install
+  rm -fr "${pkgdir}/etc/init.d"
+  rm -rf ${pkgdir}/usr/lib/tmpfiles.d/
+  rm -rf ${pkgdir}/usr/lib/systemd/
+}

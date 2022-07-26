@@ -1,0 +1,30 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=Linux-PAM
+pkgdesc="The Linux PAM package contains Pluggable Authentication Modules used to enable the local system administrator to choose how applications authenticate users."
+pkgver=1.5.2
+pkgrel=1
+arch=(x86_64)
+source=(https://github.com/linux-pam/linux-pam/releases/download/v${pkgver}/Linux-PAM-${pkgver}.tar.xz)
+groups=(ovios)
+
+build() {
+cd $pkgname-$pkgver
+	sed -e /service_DATA/d \
+        -i modules/pam_namespace/Makefile.am &&
+        autoreconf
+	
+	./configure --prefix=/usr                        \
+            --sbindir=/usr/sbin                  \
+            --sysconfdir=/etc                    \
+            --libdir=/usr/lib                    \
+            --enable-securedir=/usr/lib/security \
+            --docdir=/usr/share/doc/Linux-PAM-1.5.2
+	make
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR=${pkgdir} install
+  mkdir -pv ${pkgdir}/etc/pam.d
+  cp ../../pam.d/* ${pkgdir}/etc/pam.d/
+}

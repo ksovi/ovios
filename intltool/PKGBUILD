@@ -1,0 +1,24 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=intltool
+pkgver=0.51.0
+_majver=5.34
+pkgrel=1 
+pkgdesc="The Intltool is an internationalization tool used for extracting translatable strings from source files." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.gz)
+
+build() { 
+        cd "$srcdir/$pkgname-$pkgver"
+		sed -i 's:\\\${:\\\$\\{:' intltool-update.in
+		./configure --prefix=/usr
+        make
+}
+
+package() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+        make DESTDIR="$pkgdir" install
+		install -v -Dm644 doc/I18N-HOWTO ${pkgdir}/usr/share/doc/intltool-${pkgver}/I18N-HOWTO
+}

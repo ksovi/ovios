@@ -1,0 +1,19 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=wget
+pkgver=1.21.3
+pkgrel=1
+pkgdesc="The Wget package contains a utility useful for non-interactive downloading of files from the Web"
+source=(${pkgname}-${pkgver}.tar.gz)
+arch=(any)
+
+build() {
+    cd ${pkgname}-${pkgver}
+    ./configure --prefix=/usr      \
+            --sysconfdir=/etc  \
+            --with-ssl=openssl 
+	make
+}
+package() {
+   cd ${pkgname}-${pkgver}
+   DESTDIR="$pkgdir" make install
+}

@@ -1,0 +1,35 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=openssh
+pkgver=8.9p1
+pkgrel=1
+pkgdesc="The ssh clients and the sshd daemon"
+arch=('x86_64')
+
+groups=('ovios')
+install=openssh.install
+
+source=(${pkgname}-${pkgver}.tar.gz)
+
+build() {
+   cd $pkgname-$pkgver
+   ./configure --prefix=/usr                            \
+            --sysconfdir=/etc/ssh                    \
+            --with-privsep-path=/var/lib/sshd        \
+            --with-default-path=/usr/bin             \
+            --with-superuser-path=/usr/sbin:/usr/bin \
+            --with-pid-dir=/run
+	make
+}
+
+package() {
+    cd $pkgname-$pkgver
+    mkdir -p ${pkgdir}/var/lib/sshd
+    chmod 700 ${pkgdir}/var/lib/sshd
+    chown -v root:sys ${pkgdir}/var/lib/sshd
+    mkdir -p ${pkgdir}/usr/bin/
+    mkdir -p ${pkgdir}/usr/share/man/man1/
+	
+    make DESTDIR="$pkgdir" install
+    install -v -m755    contrib/ssh-copy-id ${pkgdir}/usr/bin/ssh-copy-id
+    install -v -m644    contrib/ssh-copy-id.1 ${pkgdir}/usr/share/man/man1/
+}

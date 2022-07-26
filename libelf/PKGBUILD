@@ -1,0 +1,27 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=libelf
+_pkgname=elfutils
+pkgver=0.186
+pkgrel=1 
+pkgdesc="Libelf is a library for handling ELF (Executable and Linkable Format) files." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($_pkgname-$pkgver.tar.bz2)
+
+build() { 
+    cd "$srcdir/$_pkgname-$pkgver"
+	./configure --prefix=/usr                \
+            --disable-debuginfod         \
+            --enable-libdebuginfod=dummy
+    make
+}
+
+package() { 
+        cd "$srcdir/$_pkgname-$pkgver"
+		make DESTDIR="$pkgdir" -C libelf install
+		mkdir -p ${pkgdir}/usr/lib/pkgconfig
+		install -vm644 config/libelf.pc ${pkgdir}/usr/lib/pkgconfig/
+		rm ${pkgdir}/usr/lib/libelf.a
+}

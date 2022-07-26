@@ -1,0 +1,21 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=make
+pkgver=4.3
+pkgrel=1
+pkgdesc="A program for controlling the generation of executables and other non-source files of a package from source files." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.gz)
+
+build() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	./configure --prefix=/usr
+	make
+}
+
+package() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	make DESTDIR=${pkgdir} install
+}

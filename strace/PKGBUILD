@@ -1,0 +1,21 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=strace
+pkgver=5.17
+pkgrel=1
+pkgdesc='A diagnostic, debugging and instructional userspace tracer'
+arch=(x86_64)
+url='https://strace.io/'
+license=(BSD)
+groups=(ovios)
+source=(https://github.com/strace/strace/releases/download/v$pkgver/strace-$pkgver.tar.xz{,.asc})
+build() {
+  cd $pkgname-$pkgver
+  ./configure --prefix=/usr --enable-mpers=no
+  make
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir" install
+  install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

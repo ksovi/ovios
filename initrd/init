@@ -1,0 +1,126 @@
+#!/bin/busybox sh
+# 
+# init script for initramfs for OviOS Linux
+#
+
+PATH=/bin:/usr/bin:/sbin:/usr/sbin
+export PATH
+problem()
+{
+   printf "Encountered a problem!\n\nDropping you to a shell.\n\n"
+   /bin/busybox sh
+}
+
+no_device()
+{
+   printf "The device %s, which is supposed to contain the\n" $1
+   printf "root file system, does not exist.\n"
+   printf "Please fix this problem and exit this shell.\n\n"
+}
+
+no_mount()
+{
+   printf "Could not mount device %s\n" $1
+   printf "Sleeping forever. Please reboot and fix the kernel command line.\n\n"
+   printf "Maybe the device is formatted with an unsupported file system?\n\n"
+   printf "Or maybe filesystem type autodetection went wrong, in which case\n"
+   printf "you should add the rootfstype=... parameter to the kernel command line.\n\n"
+   printf "Available partitions:\n"
+}
+
+do_mount_root()
+{
+   /bin/busybox mkdir /.root
+   [ -n "$rootflags" ] && rootflags="$rootflags,"
+   rootflags="$rootflags$ro"
+
+   case "$root" in
+      /dev/* ) device=$root ;;
+      ZFS=/ROOT/ovios ) device="zfs_root" ;;
+      UUID=* ) eval $root; device="/dev/disk/by-uuid/$UUID"  ;;
+      LABEL=*) eval $root; device="/dev/disk/by-label/$LABEL" ;;
+      ""     ) echo "No root device specified." ; problem    ;;
+   esac
+
+   if [ $device == "zfs_root" ]; then
+      /bin/busybox mkdir /ovios
+      depmod -a
+      modprobe spl
+      modprobe zfs
+      zpool import -R /ovios ovios
+      #zpool import -R /ovios boot
+   fi
+   if [ $device != "zfs_root" ]; then
+      while [ ! -b "$device" ] ; do
+         no_device $device
+         problem
+      done
+   fi
+   if [ $device != "zfs_root" ]; then
+      if ! /bin/busybox mount -n -t "$rootfstype" -o "$rootflags" "$device" /.root ; then
+         no_mount $device
+         /bin/busybox cat /proc/partitions
+         while true ; do /bin/busybox sleep 10000 ; done
+      else
+         echo "Successfully mounted device $root"
+      fi
+   fi
+}
+
+init=/sbin/init
+root=
+rootdelay=
+rootfstype=auto
+ro="ro"
+rootflags=
+device=
+
+/bin/busybox mount -n -t devtmpfs devtmpfs /dev
+/bin/busybox mount -n -t proc     proc     /proc
+/bin/busybox mount -n -t sysfs    sysfs    /sys
+/bin/busybox mount -n -t tmpfs    tmpfs    /run
+
+read -r cmdline < /proc/cmdline
+
+for param in $cmdline ; do
+  case $param in
+    init=*      ) init=${param#init=}             ;;
+    root=*      ) root=${param#root=}             ;;
+    rootdelay=* ) rootdelay=${param#rootdelay=}   ;;
+    rootfstype=*) rootfstype=${param#rootfstype=} ;;
+    rootflags=* ) rootflags=${param#rootflags=}   ;;
+    ro          ) ro="ro"                         ;;
+    rw          ) ro="rw"                         ;;
+  esac
+done
+
+# udevd location depends on version
+if [ -x /sbin/udevd ]; then
+  UDEVD=/sbin/udevd
+elif [ -x /lib/udev/udevd ]; then
+  UDEVD=/lib/udev/udevd
+elif [ -x /lib/systemd/systemd-udevd ]; then
+  UDEVD=/lib/systemd/systemd-udevd
+else
+  echo "Cannot find udevd nor systemd-udevd"
+  problem
+fi
+
+${UDEVD} --daemon --resolve-names=never
+/sbin/udevadm trigger
+/sbin/udevadm settle
+
+if [ -f /etc/mdadm.conf ] ; then mdadm -As                       ; fi
+if [ -x /sbin/vgchange  ] ; then /sbin/vgchange -a y > /dev/null ; fi
+if [ -n "$rootdelay"    ] ; then sleep "$rootdelay"              ; fi
+ 
+/bin/busybox sleep 5
+
+do_mount_root
+/bin/killall -w ${UDEVD##*/}
+if [ $device == "zfs_root" ]; then
+    exec switch_root /ovios "$init" "$@"
+else
+    exec switch_root /.root "$init" "$@"
+fi
+

@@ -1,0 +1,19 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=jansson
+pkgver=2.14
+pkgrel=1
+arch=(any)
+groups=(ovios)
+
+source=(https://github.com/akheron/jansson/releases/download/v${pkgver}/jansson-${pkgver}.tar.bz2)
+
+build() {
+  cd jansson-${pkgver}
+  ./configure --prefix=/usr --disable-static
+  make
+}
+
+package() {
+	cd jansson-${pkgver}
+	make DESTDIR=${pkgdir} install
+}

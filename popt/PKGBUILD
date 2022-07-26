@@ -1,0 +1,19 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=popt
+pkgver=1.18
+pkgrel=1
+arch=(x86_64)
+source=(ftp://ftp.rpm.org/pub/rpm/popt/releases/popt-1.x/popt-${pkgver}.tar.gz)
+groups=('ovios')
+
+build() {
+	cd $pkgname-$pkgver
+	./configure --prefix=/usr --disable-static
+	make
+}
+
+package() {
+	cd $pkgname-$pkgver
+	make DESTDIR=${pkgdir} install
+	install -Dm644 COPYING "${pkgdir}"/usr/share/licenses/${pkgname}/LICENSE
+}

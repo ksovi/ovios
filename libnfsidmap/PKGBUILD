@@ -1,0 +1,25 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=libnfsidmap
+pkgver=0.27
+pkgrel=1
+pkgdesc="Library to help mapping IDs, mainly for NFSv4"
+arch=('i686' 'x86_64')
+url="http://www.citi.umich.edu/projects/nfsv4/linux/"
+groups=(ovios)
+depends=(nfs-utils)
+
+source=(https://fedorapeople.org/~steved/libnfsidmap/${pkgver}/libnfsidmap-$pkgver.tar.bz2)
+
+build() {
+ cd $srcdir/$pkgname-$pkgver
+ ./configure --prefix=/usr --sysconfdir=/etc --disable-static
+ make
+}
+
+package() {
+ cd $srcdir/$pkgname-$pkgver
+ make DESTDIR=$pkgdir install
+
+ # install license
+ install -Dm644 COPYING $pkgdir/usr/share/licenses/nfsidmap/LICENSE
+}

@@ -1,0 +1,27 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=pam-krb5
+pkgver=4.11
+pkgrel=1
+pkgdesc="PAM module providing Kerberos v5 support"
+arch=('x86_64')
+url="https://www.eyrie.org/~eagle/software/pam-krb5/"
+license=('custom')
+depends=('krb5')
+groups=(ovios)
+
+source=(https://archives.eyrie.org/software/kerberos/$pkgname-$pkgver.tar.gz{,.asc})
+build() {
+  cd $pkgname-$pkgver
+
+  ./configure --prefix=/usr --enable-reduced-depends --libdir=/usr/lib
+
+  make
+}
+
+package() {
+  cd $pkgname-$pkgver
+
+  make DESTDIR="$pkgdir" install
+
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

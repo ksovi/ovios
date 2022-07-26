@@ -1,0 +1,25 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=meson
+pkgver=0.61.1
+pkgrel=1 
+pkgdesc="Meson is an open source build system meant to be both extremely fast and as user friendly as possible." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.gz)
+
+build() { 
+    cd "$srcdir/$pkgname-$pkgver"
+    python3 setup.py build
+}
+
+package() { 
+        cd "$srcdir/$pkgname-$pkgver"
+	python3 setup.py install --root=dest
+	cp -rv dest/* ${pkgdir}/
+	mkdir -p ${pkgdir}/usr/share/bash-completion/completions/
+	mkdir -p ${pkgdir}/usr/share/zsh/site-functions/
+	install -vDm644 data/shell-completions/bash/meson ${pkgdir}/usr/share/bash-completion/completions/meson
+	install -vDm644 data/shell-completions/zsh/_meson ${pkgdir}/usr/share/zsh/site-functions/_meson
+}

@@ -1,0 +1,38 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=open-iscsi
+pkgver=2.1.6
+pkgrel=1
+pkgdesc='iSCSI userland tools'
+arch=('x86_64')
+url='https://www.open-iscsi.com/'
+license=('GPL')
+groups=(ovios)
+
+install=open-iscsi.install
+
+backup=('etc/iscsi/iscsid.conf'
+	'etc/iscsi/initiatorname.iscsi')
+
+#source=("$pkgname-$pkgver.tar.gz::https://github.com/open-iscsi/open-iscsi/archive/$pkgver.tar.gz")
+source=($pkgver.tar.gz)
+build() {
+  cd "$srcdir"/${pkgname}-${pkgver}
+
+  make user LIB_DIR=/usr/lib
+}
+
+package() {
+  cd "$srcdir"/${pkgname}-${pkgver}
+
+  make DESTDIR="$pkgdir" LIB_DIR=/usr/lib install 
+
+  install -D -m0644 "$srcdir"/${pkgname}-${pkgver}/etc/iscsid.conf "$pkgdir"/etc/iscsi
+  echo -n > "$pkgdir"/etc/iscsi/initiatorname.iscsi
+
+  # copy docs
+  mkdir -p "$pkgdir"/usr/share/doc/${pkgname}
+  install -m0644 Changelog "$pkgdir"/usr/share/doc/${pkgname}/
+  install -m0644 README "$pkgdir"/usr/share/doc/${pkgname}/
+
+  mv "$pkgdir"/sbin "$pkgdir"/usr/bin
+}

@@ -1,0 +1,25 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=nspr
+pkgver=4.33
+pkgrel=1
+pkgdesc="Netscape Portable Runtime (NSPR) provides a platform-neutral API for system level and libc like functions."
+arch=('i686' 'x86_64')
+groups=(ovios)
+source=(https://archive.mozilla.org/pub/nspr/releases/v${pkgver}/src/nspr-${pkgver}.tar.gz)
+
+build() {
+	 cd ${pkgname}-${pkgver}/nspr
+	 sed -ri '/^RELEASE/s/^/#/' pr/src/misc/Makefile.in
+	sed -i 's#$(LIBRARY) ##'   config/rules.mk
+
+	./configure --prefix=/usr \
+            --with-mozilla \
+            --with-pthreads \
+            $([ $(uname -m) = x86_64 ] && echo --enable-64bit)
+	make
+}
+
+package() {
+	 cd ${pkgname}-${pkgver}/nspr
+	 make DESTDIR=${pkgdir} install
+}

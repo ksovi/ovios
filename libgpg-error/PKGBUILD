@@ -1,0 +1,21 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=libgpg-error
+pkgver=1.44
+pkgrel=1
+pkgdesc="The libgpg-error package contains a library that defines common error values for all GnuPG components."
+arch=(any)
+source=(ftp://ftp.gnupg.org/gcrypt/libgpg-error/libgpg-error-${pkgver}.tar.bz2)
+
+groups=(ovios)
+
+build() {
+cd $pkgname-$pkgver
+    ./configure --prefix=/usr
+	make
+}
+
+package() {
+	cd $pkgname-$pkgver
+	make DESTDIR=${pkgdir} install
+	install -v -m644 -D README ${pkgdir}/usr/share/doc/libgpg-error-${pkgver}/README
+}

@@ -1,0 +1,12 @@
+diff -ur b/pcs/cli/common/console_report.py a/pcs/cli/common/console_report.py
+--- b/pcs/cli/common/console_report.py	2022-04-21 13:29:43.145032858 +0000
++++ a/pcs/cli/common/console_report.py	2022-04-21 13:31:30.498373608 +0000
+@@ -4,7 +4,7 @@
+     print_function,
+ )
+ 
+-from collections import Iterable
++from collections.abc import Iterable
+ from functools import partial
+ import sys
+ 

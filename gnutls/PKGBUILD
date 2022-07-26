@@ -1,0 +1,27 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=gnutls
+pkgver=3.7.4
+pkgrel=1
+pkgdesc="The Nettle package contains a low-level cryptographic library that is designed to fit easily in many contexts."
+arch=(any)
+source=(ftp://ftp.gnupg.org/gcrypt/gnutls/v3.7/gnutls-${pkgver}.tar.xz)
+
+depends=(nettle)
+groups=(ovios)
+
+build() {
+cd $pkgname-$pkgver
+       export PKG_CONFIG_PATH=/usr/lib64/pkgconfig/:/usr/lib/pkgconfig/ ; ./configure --prefix=/usr \
+            --docdir=/usr/share/doc/gnutls-${pkgver} \
+	    -disable-guile \
+            --disable-rpath \
+            --with-default-trust-store-pkcs11="pkcs11:" \
+	    --with-included-libtasn1  \
+	    --with-included-unistring
+	make
+}
+
+package() {
+	cd $pkgname-$pkgver
+	make DESTDIR=${pkgdir} install
+}

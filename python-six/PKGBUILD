@@ -1,0 +1,17 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+groups=(ovios)
+pkgname=python-six
+pkgver=1.16.0
+pkgrel=5
+pkgdesc="Python 2 and 3 compatibility utilities"
+arch=('any')
+url="https://pypi.python.org/pypi/six/"
+
+source=("https://pypi.io/packages/source/s/six/six-$pkgver.tar.gz")
+
+
+package() {
+  cd six-$pkgver
+  python setup.py install --root "$pkgdir" --optimize=1
+  install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+}

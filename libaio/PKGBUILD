@@ -1,0 +1,18 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=libaio
+pkgver=0.3.112
+pkgrel=1
+pkgdesc="The libaio package is an asynchronous I/O facility"
+
+source=(${pkgname}_${pkgver}.orig.tar.xz)
+arch=(any)
+
+build() {
+    cd ${pkgname}-${pkgver}
+	sed -i '/install.*libaio.a/s/^/#/' src/Makefile
+	make
+}
+package() {
+   cd ${pkgname}-${pkgver}
+   DESTDIR="$pkgdir" make install
+}

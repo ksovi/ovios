@@ -1,0 +1,38 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=bzip2
+pkgver=1.0.8
+pkgrel=1
+pkgdesc="Programs for compressing and decompressing files."
+arch=(i686 x86_64)
+url=" http://www.bzip.org/"
+license=('custom')
+groups=(ovios)
+depends=('glibc')
+groups=(ovios)
+source=(http://www.bzip.org/$pkgver/$pkgname-$pkgver.tar.gz
+bzip2-1.0.8-install_docs-1.patch) 
+
+build() { 
+        cd "$srcdir/$pkgname-$pkgver"
+        patch -Np1 -i $srcdir/${pkgname}-${pkgver}-install_docs-1.patch
+        sed -i 's@\(ln -s -f \)$(PREFIX)/bin/@\1@' Makefile
+        sed -i "s@(PREFIX)/man@(PREFIX)/share/man@g" Makefile
+        make -f Makefile-libbz2_so
+        make clean
+        make
+} 
+ 
+package() {
+        cd "$srcdir/$pkgname-$pkgver"
+        make PREFIX="$pkgdir/usr" install
+ 
+        install -vdm 0755 "$pkgdir/usr/{lib,bin}"
+ 
+        cp -v bzip2-shared "$pkgdir/usr/bin/bzip2"
+		
+        cp -av libbz2.so* "$pkgdir/usr/lib/"
+        ln -sv libbz2.so.1.0 "$pkgdir/usr/lib/libbz2.so"
+        ln -sfv bzip2 "$pkgdir/usr/bin/bunzip2"
+        ln -sfv bzip2 "$pkgdir/usr/bin/bzcat"
+	rm -f ${pkgdir}/usr/lib/libbz2.a
+}

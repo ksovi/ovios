@@ -1,0 +1,21 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=python-packaging
+pkgver=21.3
+pkgrel=1
+pkgdesc="Core utilities for Python packages"
+arch=('any')
+url="https://github.com/pypa/packaging"
+license=('Apache')
+groups=(ovios)
+source=("https://github.com/pypa/packaging/archive/$pkgver/$pkgname-$pkgver.tar.gz")
+
+build() {
+  cd packaging-$pkgver
+  python setup.py build
+}
+
+
+package() {
+  cd packaging-$pkgver
+  python setup.py install --root="$pkgdir" --optimize=1
+}

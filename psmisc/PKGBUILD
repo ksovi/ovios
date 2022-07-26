@@ -1,0 +1,22 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=psmisc 
+pkgver=23.4
+pkgrel=1 
+pkgdesc="The Psmisc package contains programs for displaying information about running processes." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.xz)
+
+build() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+		
+		./configure --prefix=/usr
+        make
+}
+
+package() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+        make DESTDIR="$pkgdir" install
+}

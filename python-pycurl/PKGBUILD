@@ -1,0 +1,25 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+groups=(ovios)
+pkgname=python-pycurl
+pkgver=7.45.1
+pkgrel=1
+pkgdesc="A Python 3.x interface to libcurl"
+arch=('x86_64')
+url="http://pycurl.sourceforge.net/"
+source=("https://github.com/pycurl/pycurl/archive/REL_${pkgver//./_}/$pkgname-$pkgver.tar.gz")
+
+prepare() {
+  mv pycurl-REL_${pkgver//./_} pycurl-$pkgver
+}
+
+build() {
+  cd pycurl-$pkgver
+  make
+  python setup.py build
+}
+
+package() {
+  cd pycurl-$pkgver
+  python setup.py install -O1 --root="$pkgdir"
+  install -Dm644 COPYING-MIT -t "$pkgdir"/usr/share/licenses/$pkgname/
+}

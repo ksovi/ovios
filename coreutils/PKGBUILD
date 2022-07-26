@@ -1,0 +1,31 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=coreutils
+pkgver=9.0
+pkgrel=1
+pkgdesc="The Coreutils package contains utilities for showing and setting the basic system characteristics." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.xz)
+
+build() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	patch -Np1 -i ../../coreutils-9.0-i18n-1.patch
+    patch -Np1 -i ../../coreutils-9.0-chmod_fix-1.patch
+	autoreconf -fiv
+	FORCE_UNSAFE_CONFIGURE=1 ./configure \
+			--prefix=/usr            \
+			--enable-no-install-program=kill,uptime
+    make
+}
+
+package() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	make DESTDIR=${pkgdir} install
+	mkdir -p ${pkgdir}/usr/sbin
+	mkdir -p ${pkgdir}/usr/share/man/man8/
+    mv -v ${pkgdir}/usr/bin/chroot ${pkgdir}/usr/sbin/
+    mv -v ${pkgdir}/usr/share/man/man1/chroot.1 ${pkgdir}/usr/share/man/man8/chroot.8
+    sed -i 's/"1"/"8"/' ${pkgdir}/usr/share/man/man8/chroot.8
+}

@@ -1,0 +1,26 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=pkg-config 
+pkgver=0.29.2 
+pkgrel=1 
+pkgdesc="The pkg-config package contains a tool for passing the include path and/or library paths to build tools during the configure and make phases of package installations." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.gz)
+
+build() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+		
+		./configure --prefix=/usr      \
+            --with-internal-glib       \
+            --disable-host-tool        \
+            --docdir=/usr/share/doc/${pkgname}-${pkgver}
+		
+        make 
+}
+
+package() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+        make DESTDIR="$pkgdir" install  
+}

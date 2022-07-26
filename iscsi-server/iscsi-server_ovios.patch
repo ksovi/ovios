@@ -1,0 +1,52 @@
+Only in b: Makefile.orig
+Only in b: Makefile.rej
+diff -ur b/scripts/Makefile a/scripts/Makefile
+--- b/scripts/Makefile	2022-04-01 23:43:34.000000000 +0000
++++ a/scripts/Makefile	2022-04-11 17:44:33.401770729 +0000
+@@ -1,6 +1,6 @@
+ sbindir ?= $(PREFIX)/sbin
+ 
+-SCRIPTS += tgt-setup-lun tgt-admin
++SCRIPTS += tgt-setup-lun tgt-admin tgt-ovadmin tgt-ovsetup
+ 
+ .PHONY: all
+ all:
+diff -ur b/usr/sbc.c a/usr/sbc.c
+--- b/usr/sbc.c	2022-04-01 23:43:34.000000000 +0000
++++ a/usr/sbc.c	2022-04-11 17:42:37.685096003 +0000
+@@ -735,7 +735,7 @@
+ 	if (spc_lu_init(lu))
+ 		return TGTADM_NOMEM;
+ 
+-	strncpy(lu->attrs.product_id, "VIRTUAL-DISK", sizeof(lu->attrs.product_id));
++	strncpy(lu->attrs.product_id, "OVIOS_LUN", sizeof(lu->attrs.product_id));
+ 	lu->attrs.version_desc[0] = 0x04C0; /* SBC-3 no version claimed */
+ 	lu->attrs.version_desc[1] = 0x0960; /* iSCSI */
+ 	lu->attrs.version_desc[2] = 0x0300; /* SPC-3 */
+diff -ur b/usr/spc.c a/usr/spc.c
+--- b/usr/spc.c	2022-04-01 23:43:34.000000000 +0000
++++ a/usr/spc.c	2022-04-11 17:43:29.765099615 +0000
+@@ -2104,9 +2104,9 @@
+ 	snprintf(lu->attrs.product_rev, sizeof(lu->attrs.product_rev),
+ 		 "%s", "0001");
+ 	snprintf(lu->attrs.scsi_id, sizeof(lu->attrs.scsi_id),
+-		 "IET     %04x%04" PRIx64, tgt->tid, lu->lun);
++		 "OVIOS     %04x%04" PRIx64, tgt->tid, lu->lun);
+ 	snprintf(lu->attrs.scsi_sn, sizeof(lu->attrs.scsi_sn),
+-		 "beaf%d%" PRIu64, tgt->tid, lu->lun);
++		 "ovios%d%" PRIu64, tgt->tid, lu->lun);
+ 	lu->attrs.numeric_id = tgt->tid;
+ 	lu->attrs.numeric_id <<= 32;
+ 	lu->attrs.numeric_id |= lu->lun;
+diff -ur b/usr/tgtd.h a/usr/tgtd.h
+--- b/usr/tgtd.h	2022-04-01 23:43:34.000000000 +0000
++++ a/usr/tgtd.h	2022-04-11 17:41:32.735091425 +0000
+@@ -29,7 +29,7 @@
+ #define BLOCK_DESCRIPTOR_LEN	8
+ #define VERSION_DESCRIPTOR_LEN	8
+ 
+-#define VENDOR_ID	"IET"
++#define VENDOR_ID	"OVIOS"
+ 
+ #define _TAB1 "    "
+ #define _TAB2 _TAB1 _TAB1

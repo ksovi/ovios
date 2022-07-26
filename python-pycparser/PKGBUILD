@@ -1,0 +1,22 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=python-pycparser
+pkgver=2.21
+pkgrel=3
+pkgdesc='C parser and AST generator written in Python'
+url='https://github.com/eliben/pycparser'
+groups=(ovios)
+arch=(any)
+license=('BSD')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/eliben/pycparser/archive/release_v$pkgver.tar.gz")
+build() {
+  cd "$srcdir"/pycparser-release_v$pkgver
+  python setup.py build
+  cd pycparser
+  python _build_tables.py
+}
+package() {
+  cd pycparser-release_v$pkgver
+
+  python setup.py install --root="$pkgdir" --optimize=1
+  install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+}

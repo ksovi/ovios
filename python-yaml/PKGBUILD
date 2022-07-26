@@ -1,0 +1,25 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+_name=PyYAML
+pkgname=python-yaml
+pkgver=6.0
+pkgrel=1
+pkgdesc='Python bindings for YAML, using fast libYAML library'
+arch=(x86_64)
+url='https://pyyaml.org/wiki/PyYAML'
+license=(MIT)
+groups=(ovios)
+source=("https://files.pythonhosted.org/packages/source/${_name::1}/${_name}/${_name}-${pkgver}.tar.gz")
+
+
+build() {
+  cd $_name-$pkgver
+  python setup.py --with-libyaml build
+}
+
+package() {
+  cd $_name-$pkgver
+  python setup.py install --optimize=1 --root="$pkgdir"
+  install -Dm 644 LICENSE -t "${pkgdir}"/usr/share/licenses/${pkgname}
+  install -Dm 644 CHANGES README.md -t "${pkgdir}"/usr/share/doc/${pkgname}
+}
+

@@ -1,0 +1,25 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=mpfr
+pkgver=4.1.0
+pkgrel=1
+pkgdesc="The MPFR package contains functions for multiple precision math"
+
+arch=('any') 
+groups=(ovios) 
+source=(${pkgname}-${pkgver}.tar.xz)
+
+build() { 
+	cd $srcdir/$pkgname-$pkgver
+	./configure --prefix=/usr    \
+            --disable-static \
+            --docdir=/usr/share/doc/mpfr-${pkgver}
+	make
+	make html
+} 
+ 
+package() { 
+  cd $srcdir/$pkgname-$pkgver
+  
+  make DESTDIR=$pkgdir install
+  make DESTDIR=$pkgdir install-html
+}

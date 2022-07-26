@@ -1,0 +1,26 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=sysvinit
+pkgver=3.01
+pkgrel=3
+pkgdesc="The Sysvinit package contains programs for controlling the startup, running, and shutdown of the system." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.xz
+sysvinit-3.01-consolidated-1.patch)
+
+build() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	patch -Np1 -i ../sysvinit-3.01-consolidated-1.patch
+	make
+}
+
+package() { 
+    cd "$srcdir/$pkgname-$pkgver"
+    make DISTRO=ovios ROOT="$pkgdir/"  install
+    mkdir -pv ${pkgdir}/usr/{sbin,bin}
+    cp -arv  ${pkgdir}/sbin/* ${pkgdir}/usr/sbin/
+    #cp -arv  ${pkgdir}/bin/* ${pkgdir}/usr/bin/
+    rm -rf ${pkgdir}/bin/ ${pkgdir}/sbin/
+}

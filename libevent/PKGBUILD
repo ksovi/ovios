@@ -1,0 +1,23 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=libevent
+pkgver=2.1.12
+pkgrel=1
+pkgdesc="libevent is an asynchronous event notification software library"
+arch=(any)
+
+groups=(ovios)
+
+source=(https://github.com/libevent/libevent/releases/download/release-${pkgver}-stable/libevent-${pkgver}-stable.tar.gz)
+build() {
+  cd $pkgname-$pkgver-stable
+  sed -i 's/python/&3/' event_rpcgen.py
+  ./configure --prefix=/usr --disable-static
+
+  make
+}
+
+package() {
+  cd $pkgname-$pkgver-stable
+
+  make DESTDIR="$pkgdir" install
+}

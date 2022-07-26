@@ -1,0 +1,40 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=ncurses 
+pkgver=6.3
+pkgrel=1 
+pkgdesc="The Ncurses package contains libraries for terminal-independent handling of character screens." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.gz)
+
+build() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+		
+		./configure --prefix=/usr           \
+            --mandir=/usr/share/man \
+            --with-shared           \
+            --without-debug         \
+            --without-normal        \
+            --enable-pc-files       \
+            --enable-widec          \
+            --with-pkg-config-libdir=/usr/lib/pkgconfig
+		
+        make 
+}
+
+package() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+        make DESTDIR="$pkgdir" install
+	    for lib in ncurses form panel menu ; do
+			rm -vf                    ${pkgdir}/usr/lib/lib${lib}.so
+			echo "INPUT(-l${lib}w)" > ${pkgdir}/usr/lib/lib${lib}.so
+			ln -sfv ${lib}w.pc        ${pkgdir}/usr/lib/pkgconfig/${lib}.pc
+		done
+        rm -vf                     ${pkgdir}/usr/lib/libcursesw.so
+		echo "INPUT(-lncursesw)" > ${pkgdir}/usr/lib/libcursesw.so
+		ln -sfv libncurses.so      ${pkgdir}/usr/lib/libcurses.so
+		mkdir -pv      ${pkgdir}/usr/share/doc/ncurses-6.3
+		cp -v -R doc/* ${pkgdir}/usr/share/doc/ncurses-6.3
+}

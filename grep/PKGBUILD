@@ -1,0 +1,21 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=grep 
+pkgver=3.7
+pkgrel=1 
+pkgdesc="The Grep package contains programs for searching through the contents of files." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.xz)
+
+build() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+		./configure --prefix=/usr 
+        make
+}
+
+package() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+        make DESTDIR="$pkgdir" install
+}

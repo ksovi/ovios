@@ -1,0 +1,21 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+groups=(ovios)
+pkgname=python-suds
+pkgver=1.4.1.0
+pkgrel=2
+pkgdesc="A lightweight SOAP python client"
+arch=('any')
+url="https://github.com/cackharot/suds-py3"
+license=('LGPL')
+
+source=("https://pypi.io/packages/source/s/suds-py3/suds-py3-$pkgver.tar.gz")
+
+build() {
+  cd suds-py3-$pkgver
+  python setup.py build
+}
+
+package() {
+  cd suds-py3-$pkgver
+  python setup.py install --root="$pkgdir" -O1
+}

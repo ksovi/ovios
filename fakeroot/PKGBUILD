@@ -1,0 +1,34 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=fakeroot
+pkgver=1.28
+pkgrel=1
+pkgdesc='Tool for simulating superuser privileges'
+arch=('x86_64')
+license=('GPL')
+url='https://tracker.debian.org/pkg/fakeroot'
+groups=('ovios')
+
+source=(${pkgname}_${pkgver}.orig.tar.gz)
+
+build() {
+  cd $pkgname-$pkgver
+
+  ./configure --prefix=/usr \
+    --libdir=/usr/lib/libfakeroot \
+    --disable-static \
+    --with-ipc=sysv
+
+  make
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir" install
+
+  install -dm0755 "$pkgdir/etc/ld.so.conf.d/"
+  echo '/usr/lib/libfakeroot' > "$pkgdir/etc/ld.so.conf.d/fakeroot.conf"
+
+  # install README for sysv/tcp usage
+  install -Dm0644 README "$pkgdir/usr/share/doc/$pkgname/README"
+}
+

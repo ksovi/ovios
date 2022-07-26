@@ -1,0 +1,26 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=linux-api-headers
+pkgver=5.17.4
+pkgrel=1
+pkgdesc='Kernel headers sanitized for use in userspace'
+arch=(any)
+url='https://www.gnu.org/software/libc'
+license=(GPL2)
+groups=(ovios)
+
+source=(https://www.kernel.org/pub/linux/kernel/v${pkgver:0:1}.x/linux-${pkgver}.tar.xz)
+
+build() {
+  cd linux-$pkgver
+
+  make mrproper
+}
+
+package() {
+  cd linux-$pkgver
+  make headers
+  find usr/include -name '.*' -delete
+  rm usr/include/Makefile
+  mkdir -p ${pkgdir}/usr/include/
+  cp -rv usr/include/* ${pkgdir}/usr/include/
+}

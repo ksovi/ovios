@@ -1,0 +1,24 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=findutils
+pkgver=4.9.0
+pkgrel=1
+pkgdesc="The Findutils package contains programs to find files." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.xz)
+
+build() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	case $(uname -m) in
+		i?86)   TIME_T_32_BIT_OK=yes ./configure --prefix=/usr --localstatedir=/var/lib/locate ;;
+		x86_64) ./configure --prefix=/usr --localstatedir=/var/lib/locate ;;
+	esac
+	make
+}
+
+package() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	make DESTDIR=${pkgdir} install
+}

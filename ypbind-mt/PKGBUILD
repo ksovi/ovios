@@ -1,0 +1,29 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=ypbind-mt
+pkgver=2.7.1
+pkgrel=1
+pkgdesc='Linux NIS daemon'
+url='https://github.com/thkukuk/ypbind-mt'
+license=('GPL2')
+arch=('i686' 'x86_64')
+backup=('etc/yp.conf')
+#source=("$url/releases/download/v$pkgver/ypbind-mt-$pkgver.tar.xz"
+source=("$url/archive/v$pkgver.tar.gz")
+
+prepare() {
+  cd $pkgname-$pkgver
+  ./autogen.sh
+}
+
+build() {
+  cd $pkgname-$pkgver
+  ./configure --prefix=/usr --sbindir=/usr/sbin
+  make V=0
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="${pkgdir}" install
+  install -D -m644 etc/yp.conf "${pkgdir}"/etc/yp.conf
+}
+

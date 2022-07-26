@@ -1,0 +1,26 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=pv
+pkgver=1.6.20
+pkgrel=1
+groups=(ovios)
+pkgdesc='A terminal-based tool for monitoring the progress of data through a pipeline.'
+arch=('x86_64')
+url='http://www.ivarch.com/programs/pv.shtml'
+_url="https://github.com/a-j-wood/$pkgname"
+license=('custom:Artistic 2.0')
+depends=('glibc')
+source=("$_url/releases/download/v$pkgver/$pkgname-$pkgver.tar.bz2")
+
+build() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  ./configure --prefix=/usr --mandir=/usr/share/man
+  make
+}
+
+package() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  make DESTDIR="$pkgdir" install
+  install -Dm0644 doc/COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}

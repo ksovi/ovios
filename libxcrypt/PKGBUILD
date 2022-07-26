@@ -1,0 +1,38 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+
+pkgname=libxcrypt
+# Neither tarballs nor tags are signed, but commits are.
+_commit='6b110bcd4f4caa61fc39c7339d30adc20a7dd177' # git rev-parse v${pkgver}
+pkgver=4.4.28
+pkgrel=1
+pkgdesc='Modern library for one-way hashing of passwords'
+arch=('x86_64')
+url='https://github.com/besser82/libxcrypt/'
+license=('GPL')
+depends=('glibc')
+source=(${pkgname}-${pkgver}.tar.xz)
+sha256sums=('SKIP')
+groups=(ovios)
+
+prepare() {
+  cd $pkgname-$pkgver
+  autoreconf -fi
+}
+
+build() {
+  cd $pkgname-$pkgver
+  ./configure \
+    --prefix=/usr \
+    --disable-static \
+    --enable-hashes=strong,glibc \
+    --enable-obsolete-api=no \
+    --disable-failure-tokens \
+    --disable-werror
+  make
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir" install
+}
+

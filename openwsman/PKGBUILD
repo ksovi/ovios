@@ -1,0 +1,45 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=openwsman
+pkgver=2.7.1
+pkgrel=1
+pkgdesc="Opensource Implementation of WS-Management"
+arch=('i686' 'x86_64')
+url="https://$pkgname.github.io/"
+license=('custom:BSD')
+groups=(ovios-cluster)
+
+backup=("etc/$pkgname/$pkgname.conf"
+        "etc/$pkgname/${pkgname}_client.conf"
+        "etc/$pkgname/ssleay.cnf"
+        "etc/pam.d/$pkgname")
+source=("https://github.com/Openwsman/$pkgname/archive/v$pkgver/$pkgname-$pkgver.tar.gz")
+
+build() {
+	cd "$pkgname-$pkgver"
+
+	cmake -B build \
+	      -DCMAKE_BUILD_TYPE=Release \
+	      -DCMAKE_C_FLAGS_RELEASE='-DNDEBUG' \
+	      -DCMAKE_CXX_FLAGS_RELEASE='-DNDEBUG' \
+	      -DCMAKE_INSTALL_PREFIX=/usr \
+	      -DPACKAGE_ARCHITECTURE=$CARCH \
+	      -DLIB=lib \
+	      -DBUILD_PYTHON=OFF \
+	      -DBUILD_PYTHON3=ON \
+	      -DBUILD_RUBY_GEM=OFF \
+	      -DBUILD_JAVA=OFF
+
+	make -C build
+}
+
+
+package() {
+	cd "$pkgname-$pkgver"
+
+	make -C build DESTDIR="$pkgdir/" install
+
+	mv "$pkgdir/usr/sbin/"* "$pkgdir/usr/bin"
+	rmdir "$pkgdir/usr/sbin/"
+
+}
+

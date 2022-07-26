@@ -1,0 +1,20 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=bc
+pkgver=5.2.2 
+pkgrel=1 
+pkgdesc='The Bc package contains an arbitrary precision numeric processing language' 
+
+arch=('any') 
+groups=(ovios) 
+source=("bc-${pkgver}.tar.xz")
+
+build() { 
+  cd $srcdir/$pkgname-$pkgver 
+  CC=gcc ./configure --prefix=/usr -G -O3
+  make
+} 
+ 
+package() { 
+  cd $srcdir/$pkgname-$pkgver 
+  make DESTDIR=$pkgdir install
+}

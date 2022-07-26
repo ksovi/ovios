@@ -1,0 +1,49 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=pcs
+pkgver=0.10.4
+pkgrel=2
+pkgdesc='pacemaker corosync shell utility for cluster configuration'
+arch=('any')
+url='http://clusterlabs.org/'
+license=('GPL2')
+groups=(ovios-cluster)
+source=("https://github.com/ClusterLabs/$pkgname/archive/$pkgver.tar.gz")
+
+
+prepare() {
+  cd $pkgname-$pkgver
+  sed -i -e 's,backports-3.11.4,backports-3.15.0,' pcsd/Makefile
+  sed -i -e 's,backports (3.11.4),backports (3.15.0),' pcsd/Gemfile.lock
+  sed -i -e 's,ethon-0.11.0,ethon-0.11.0,' pcsd/Makefile
+  sed -i -e 's,ethon (0.11.0),ethon (0.11.0),' pcsd/Gemfile.lock
+  sed -i -e 's,ffi-1.9.25,ffi-1.11.3,' pcsd/Makefile
+  sed -i -e 's,ffi (1.9.25),ffi (1.11.3),' pcsd/Gemfile.lock
+  sed -i -e 's,json-2.1.0,json-2.2.0,' pcsd/Makefile
+  sed -i -e 's,json (2.1.0),json (2.2.0),' pcsd/Gemfile.lock
+  sed -i -e 's,open4-1.3.4,open4-1.3.4,' pcsd/Makefile
+  sed -i -e 's,open4 (1.3.4),open4 (1.3.4),' pcsd/Gemfile.lock
+  sed -i -e 's,rack-2.0.6,rack-2.0.5,' pcsd/Makefile
+  sed -i -e 's,rack (2.0.6),rack (2.0.5),' pcsd/Gemfile.lock
+  sed -i -e 's,rack-protection-2.0.4,rack-protection-2.0.5,' pcsd/Makefile
+  sed -i -e 's,rack-protection (2.0.4),rack-protection (2.0.5),' pcsd/Gemfile.lock
+  sed -i -e 's,rack-test-1.1.0,rack-test-1.0.0,' pcsd/Makefile
+  sed -i -e 's,rack-test (1.1.0),rack-test (1.0.0),' pcsd/Gemfile.lock
+  sed -i -e 's,sinatra-2.0.4,sinatra-2.0.5,' pcsd/Makefile
+  sed -i -e 's,sinatra (2.0.4),sinatra (2.0.5),' pcsd/Gemfile.lock
+  sed -i -e 's,tilt-2.0.9,tilt-2.0.8,' pcsd/Makefile
+  sed -i -e 's,tilt (2.0.9),tilt (2.0.8),' pcsd/Gemfile.lock
+}
+
+build() {
+  cd $pkgname-$pkgver
+  make -C pcsd BUILD_GEMS=true build_gems
+}
+
+package() {
+  cd $pkgname-$pkgver
+  #make BUILD_GEMS=false SYSTEMCTL_OVERRIDE=false IS_SYSTEMCTL=false DESTDIR="${pkgdir}" install
+  make DESTDIR="${pkgdir}" install_pcsd
+  rm -fr "${pkgdir}/usr/bin"
+  rm -rf ${pkgdir}/usr/lib/systemd/
+  mv "${pkgdir}/usr/sbin" "${pkgdir}/usr/bin"
+}

@@ -1,0 +1,21 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=mandoc
+pkgver=1.14.6
+pkgrel=1
+arch=(x86_64)
+source=(https://mandoc.bsd.lv/snapshots/mandoc-${pkgver}.tar.gz)
+groups=('ovios')
+
+build() {
+        cd $pkgname-$pkgver
+        ./configure 
+        make mandoc
+}
+
+package() {
+        cd $pkgname-$pkgver
+        mkdir -pv ${pkgdir}/usr/bin
+	mkdir -pv ${pkgdir}/usr/share/man/man1
+	install -vm755 mandoc   ${pkgdir}/usr/bin/
+	install -vm644 mandoc.1 ${pkgdir}/usr/share/man/man1
+}

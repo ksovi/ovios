@@ -1,0 +1,21 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=less 
+pkgver=590
+pkgrel=1 
+pkgdesc="The Less package contains a text file viewer." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.gz)
+
+build() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+		./configure --prefix=/usr --sysconfdir=/etc
+        make
+}
+
+package() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+        make DESTDIR="$pkgdir" install
+}

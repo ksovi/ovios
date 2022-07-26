@@ -1,0 +1,10 @@
+post_install() {
+	mkdir -pv /var/lib/dhcpcd
+	groupadd -g 52 dhcpcd
+	useradd  -c 'dhcpcd PrivSep' \
+			 -d /var/lib/dhcpcd  \
+			 -g dhcpcd           \
+			 -s /bin/false     \
+			 -u 52 dhcpcd
+	chown    -v dhcpcd:dhcpcd /var/lib/dhcpcd 
+}

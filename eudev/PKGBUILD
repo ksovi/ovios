@@ -1,0 +1,31 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=eudev 
+pkgver=3.2.11
+pkgrel=1
+pkgdesc="The Eudev package contains programs for dynamic creation of device nodes." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.gz
+	udev-ovios-20220406.tar.xz)
+
+install=eudev.install
+build() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	./configure --prefix=/usr           \
+            --bindir=/usr/sbin      \
+            --sysconfdir=/etc       \
+            --enable-manpages       \
+            --disable-static
+	make
+}
+
+package() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	mkdir -pv ${pkgdir}/usr/lib/udev/rules.d
+	mkdir -pv ${pkgdir}/etc/udev/rules.d
+	make DESTDIR=${pkgdir} install
+	tar -xvf ../udev-ovios-20220406.tar.xz 
+	make -f udev-ovios-20220406/Makefile.ovios install
+}

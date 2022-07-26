@@ -1,0 +1,22 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=libyaml
+pkgver=0.2.5
+pkgrel=1
+groups=(ovios)
+pkgdesc='A C library for parsing and emitting YAML (YAML Aint Markup Language) code'
+arch=('x86_64')
+
+source=(https://github.com/yaml/libyaml/releases/download/${pkgver}/yaml-${pkgver}.tar.gz)
+build() {
+	cd "$srcdir"/yaml-${pkgver}
+
+	./configure \
+		--prefix=/usr \
+		--disable-static
+	make
+}
+
+package() {
+	cd "$srcdir"/yaml-${pkgver}
+	make DESTDIR="${pkgdir}" install
+}

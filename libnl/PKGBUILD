@@ -1,0 +1,20 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=libnl
+pkgver=3.5.0
+_pkgver=3_5_0
+pkgrel=1
+arch=(x86_64)
+source=(https://github.com/thom311/libnl/releases/download/libnl${_pkgver}/libnl-${pkgver}.tar.gz)
+groups=(ovios)
+pkgdesc="htop is a cross-platform interactive process viewer"
+build() {
+cd $pkgname-$pkgver
+	./configure --prefix=/usr --disable-static --sysconfdir=/etc
+	make
+}
+
+
+package() {
+	cd $pkgname-$pkgver
+	make DESTDIR=${pkgdir} install
+}

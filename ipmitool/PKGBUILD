@@ -1,0 +1,60 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=ipmitool
+pkgver=1.8.18
+pkgrel=1
+pkgdesc="Command-line interface to IPMI-enabled devices"
+arch=('i686' 'x86_64')
+url="http://ipmitool.sourceforge.net"
+depends=('openssl')
+groups=(ovios)
+license=('BSD')
+source=("https://downloads.sourceforge.net/project/${pkgname}/${pkgname}/${pkgver}/${pkgname}-${pkgver}.tar.bz2"
+         ipmitool-openssl-1.1.patch
+         https://github.com/ipmitool/ipmitool/commit/e824c23316ae50beb7f7488f2055ac65e8b341f2.patch
+         https://github.com/ipmitool/ipmitool/commit/840fb1cbb4fb365cb9797300e3374d4faefcdb10.patch
+         https://github.com/ipmitool/ipmitool/commit/41d7026946fafbd4d1ec0bcaca3ea30a6e8eed22.patch
+         #https://github.com/ipmitool/ipmitool/commit/9452be87181a6e83cfcc768b3ed8321763db50e4.patch
+         9452be87181a6e83cfcc768b3ed8321763db50e4-edited.patch
+         https://github.com/ipmitool/ipmitool/commit/d45572d71e70840e0d4c50bf48218492b79c1a10.patch
+         https://github.com/ipmitool/ipmitool/commit/7ccea283dd62a05a320c1921e3d8d71a87772637.patch
+       )
+
+prepare() {
+        cd ${pkgname}-${pkgver}
+        # openssl 1.1 support (Fedora)
+        patch -p1 -i ../ipmitool-openssl-1.1.patch
+
+        # FS#69708 - [ipmitool] [Security] arbitrary code execution (CVE-2020-5208)
+        patch -p1 -i ../e824c23316ae50beb7f7488f2055ac65e8b341f2.patch
+        patch -p1 -i ../840fb1cbb4fb365cb9797300e3374d4faefcdb10.patch
+        patch -p1 -i ../41d7026946fafbd4d1ec0bcaca3ea30a6e8eed22.patch
+        patch -p1 -i ../9452be87181a6e83cfcc768b3ed8321763db50e4-edited.patch
+        patch -p1 -i ../d45572d71e70840e0d4c50bf48218492b79c1a10.patch
+        patch -p1 -i ../7ccea283dd62a05a320c1921e3d8d71a87772637.patch
+}
+
+build(){
+	cd "${srcdir}/${pkgname}-${pkgver}"
+
+	CFLAGS+=' -fcommon' # https://wiki.gentoo.org/wiki/Gcc_10_porting_notes/fno_common
+
+	# Fix warning in ipmi_fru.c
+	CFLAGS+=' -Wno-maybe-uninitialized'
+
+	if [[ $pkgver = '1.8.18' ]]; then
+		CFLAGS+=' -DMAX_CIPHER_SUITE_DATA_LEN=0x10'
+	fi
+
+	./configure --prefix=/usr --sbindir=/usr/sbin --with-kerneldir
+	make
+}
+
+package(){
+	cd "${srcdir}/${pkgname}-${pkgver}"
+
+	make DESTDIR="${pkgdir}" install
+
+	# Install license
+	install -Dm644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
+

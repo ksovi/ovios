@@ -1,0 +1,24 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=libffi
+pkgver=3.4.2
+pkgrel=2
+pkgdesc="The Libffi library provides a portable, high level programming interface to various calling conventions." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.gz)
+
+build() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	./configure --prefix=/usr          \
+            --disable-static       \
+            --with-gcc-arch=native \
+            --disable-exec-static-tramp 
+    make
+}
+
+package() { 
+        cd "$srcdir/$pkgname-$pkgver"
+		make DESTDIR="$pkgdir" install
+}

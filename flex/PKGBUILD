@@ -1,0 +1,23 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=flex
+pkgver=2.6.4
+pkgrel=1
+pkgdesc='The Flex package contains a utility for generating programs that recognize patterns in text.'
+
+arch=('any') 
+groups=(ovios) 
+source=("flex-${pkgver}.tar.gz")
+
+build() { 
+  cd $srcdir/$pkgname-$pkgver 
+  ./configure --prefix=/usr --docdir=/usr/share/doc/flex-${pkgver} \
+              --disable-static
+  make
+} 
+ 
+package() { 
+  cd $srcdir/$pkgname-$pkgver 
+  mkdir -p ${pkgdir}/usr/bin/
+  make DESTDIR=$pkgdir install
+  ln -sv flex ${pkgdir}/usr/bin/lex
+}

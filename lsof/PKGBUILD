@@ -1,0 +1,22 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=lsof
+pkgver=4.94.0
+pkgrel=1
+arch=(any)
+pkgdesc="The lsof package is useful to LiSt Open Files for a given running application or process"
+source=(https://github.com/lsof-org/lsof/releases/download/${pkgver}/lsof_${pkgver}.linux.tar.bz2)
+groups=('ovios')
+
+build() {
+	cd ${srcdir}/lsof_$pkgver.linux
+	./Configure -n linux 
+	make CFGL="-L./lib -ltirpc"  
+}
+
+package() {
+	cd ${srcdir}/lsof_${pkgver}.linux  
+	mkdir -p ${pkgdir}/usr/bin
+	mkdir -p ${pkgdir}/usr/share/man/man8  
+	install -v -m0755 -o root -g root lsof ${pkgdir}/usr/bin/  
+	install -v lsof.8 ${pkgdir}/usr/share/man/man8/
+}

@@ -1,0 +1,37 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=pacemaker
+pkgver=1.1.24
+pkgrel=1
+pkgdesc="advanced, scalable high-availability cluster resource manager"
+arch=('i686' 'x86_64')
+url="https://github.com/ClusterLabs/${pkgname}/"
+license=('GPL2')
+groups=(ovios-cluster)
+source=("https://github.com/ClusterLabs/$pkgname/archive/Pacemaker-$pkgver.tar.gz"
+        'lrmd_ovios.diff')
+prepare() {
+  cd ${pkgname}-Pacemaker-${pkgver}
+  patch -Np1 < ../lrmd_ovios.diff
+  ./autogen.sh
+}
+
+build() {
+  cd ${pkgname}-Pacemaker-${pkgver}
+  export libqb_CFLAGS="-I/usr/include"
+  export libqb_LIBS="-L/usr/lib"
+  PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/lib64/pkgconfig ./configure \
+    --prefix=/usr --disable-static \
+    --disable-fatal-warnings \
+    --disable-systemd \
+    --disable-upstart \
+    --with-corosync \
+    --with-nagios \
+    --with-acl 
+  make
+}
+
+package() {
+  cd ${pkgname}-Pacemaker-${pkgver}
+  make DESTDIR="${pkgdir}" install
+  rm -fr "$pkgdir/etc/init.d"
+}

@@ -1,0 +1,55 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=samba
+pkgver=4.16.0
+pkgrel=1
+groups=(ovios)
+arch=(x86_64)
+#source=(https://download.samba.org/pub/samba/samba-${pkgver}.tar.gz)
+source=(samba-${pkgver}.tar.gz)
+build() {
+	cd $pkgname-$pkgver
+	CPPFLAGS="-I/usr/include/tirpc"            \
+	LDFLAGS="-ltirpc"                          \
+	PATH=$PWD/pyvenv/bin:$PATH                 \
+	PKG_CONFIG_PATH=/usr/lib64/pkgconfig/:/usr/lib/pkgconfig/  \
+	./configure                                \
+	   --prefix=/usr                      \
+	   --sysconfdir=/etc                  \
+	   --localstatedir=/var               \
+	   --with-piddir=/run/samba           \
+	   --with-pammodulesdir=/usr/lib/security \
+	   --enable-fhs                       \
+	   --without-ad-dc                    \
+	   --without-systemd                  \
+	   --with-shared-modules='!vfs_snapper'  \
+	   --enable-selftest                  
+	make
+}
+
+package() {
+	cd $pkgname-$pkgver
+	sed '1s@^.*$@#!/usr/bin/python3@' \
+		-i ./bin/default/source4/scripting/bin/samba-gpupdate.inst
+
+	make DESTDIR=${pkgdir} install
+	ln -v -sf libnss_winbind.so.2  ${pkgdir}/usr/lib/libnss_winbind.so  
+	ln -v -sf libnss_wins.so.2     ${pkgdir}/usr/lib/libnss_wins.so  
+
+	install -v -m644    examples/smb.conf.default  ${pkgdir}/etc/samba/
+    sed -e "s;log file =.*;log file = /var/log/samba/%m.log;" \
+		-e "s;path = /usr/spool/samba;path = /var/spool/samba;" \
+		-i ${pkgdir}/etc/samba/smb.conf.default
+	mkdir -pv  ${pkgdir}/etc/openldap/schema                       
+
+	install -v -m644    examples/LDAP/README              \
+						${pkgdir}/etc/openldap/schema/README.LDAP  
+
+	install -v -m644    examples/LDAP/samba*              \
+						${pkgdir}/etc/openldap/schema              
+
+	install -v -m755    examples/LDAP/{get*,ol*} \
+						${pkgdir}/etc/openldap/schema
+}
+
+
+

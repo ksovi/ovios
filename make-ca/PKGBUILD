@@ -1,0 +1,13 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=make-ca
+pkgver=1.10
+pkgrel=1
+source=(${pkgname}-${pkgver}.tar.xz)
+arch=(any)
+
+install=make-ca.install
+package() {
+   cd ${pkgname}-${pkgver}
+   DESTDIR="$pkgdir" make install
+   install -vdm755 ${pkgdir}/etc/ssl/local
+}

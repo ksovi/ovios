@@ -1,0 +1,117 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=grub
+pkgver=2.06
+pkgrel=1
+pkgdesc="The The GRUB package contains the GRand Unified Bootloader."
+arch=(i686 x86_64)
+
+groups=(ovios)
+options=('!makeflags')
+
+source=($pkgname-$pkgver.tar.xz
+	grub.default)
+
+[[ "${CARCH}" == 'x86_64' ]] && _EFI_ARCH='x86_64'
+[[ "${CARCH}" == 'i686' ]] && _EFI_ARCH='i386'
+
+prepare() {
+    mv ${srcdir}/${pkgname}-${pkgver} ${srcdir}/${pkgname}
+}
+_build_grub-common_and_bios() {
+	cp -r "${srcdir}/grub/" "${srcdir}/grub-bios/"
+	cd "${srcdir}/grub-bios/"
+
+	echo "Unset all compiler FLAGS for bios build..."
+	unset CFLAGS
+	unset CPPFLAGS
+	unset CXXFLAGS
+	unset LDFLAGS
+	unset MAKEFLAGS
+	autoreconf -f -i
+	echo "Run ./configure for bios build..."
+	./configure --prefix=/usr          \
+            --sysconfdir=/etc      \
+            --disable-efiemu       \
+            --disable-werror
+	#./configure \
+	#	--with-platform="pc" \
+	#	--target="i386"  \
+	#	--enable-boot-time \
+	#       --disable-efiemu \
+        #       --disable-werror	      
+	echo "Run make for bios build..."
+	
+	make
+}
+
+_build_grub-efi() {
+	echo "Copy the source for building the ${_EFI_ARCH} efi part..."
+	cp -r "${srcdir}/grub/" "${srcdir}/grub-efi-${_EFI_ARCH}/"
+	cd "${srcdir}/grub-efi-${_EFI_ARCH}/"
+
+	echo "Unset all compiler FLAGS for ${_EFI_ARCH} efi build..."
+	unset {C,CPP,CXX,LD,MAKE}FLAGS
+	echo "Run ./configure for ${_EFI_ARCH} efi build..."
+
+        ./configure --prefix=/usr        \
+            --sysconfdir=/etc    \
+            --disable-efiemu     \
+            --enable-grub-mkfont \
+            --with-platform=efi  \
+            --target=x86_64      \
+            --disable-werror
+        unset TARGET_CC
+	make
+}
+
+build() {
+	cd "${srcdir}/grub/"
+
+	echo "Build grub ${_EFI_ARCH} efi stuff..."
+	_build_grub-efi
+
+	echo "Build grub bios stuff..."
+        _build_grub-common_and_bios
+
+}
+
+_package_grub-common_and_bios() {
+	cd "${srcdir}/grub-bios/"
+
+	echo "Run make install for bios build..."
+	make DESTDIR="${pkgdir}/" bashcompletiondir="/usr/share/bash-completion/completions" install
+
+	echo "Remove gdb debugging related files for bios build..."
+	rm -f "${pkgdir}/usr/lib/grub/i386-pc"/*.module || true
+	rm -f "${pkgdir}/usr/lib/grub/i386-pc"/*.image || true
+	rm -f "${pkgdir}/usr/lib/grub/i386-pc"/{kernel.exec,gdb_grub,gmodule.pl} || true
+
+	echo "Install /etc/default/grub (used by grub-mkconfig)..."
+	install -D -m0644 "${srcdir}/grub.default" "${pkgdir}/etc/default/grub"
+}
+
+_package_grub-efi() {
+	cd "${srcdir}/grub-efi-${_EFI_ARCH}/"
+
+	echo "Run make install for ${_EFI_ARCH} efi build..."
+	make DESTDIR="${pkgdir}/" bashcompletiondir="/usr/share/bash-completion/completions" install
+
+	echo "Remove gdb debugging related files for ${_EFI_ARCH} efi build..."
+	rm -f "${pkgdir}/usr/lib/grub/${_EFI_ARCH}-efi"/*.module || true
+	rm -f "${pkgdir}/usr/lib/grub/${_EFI_ARCH}-efi"/*.image || true
+	rm -f "${pkgdir}/usr/lib/grub/${_EFI_ARCH}-efi"/{kernel.exec,gdb_grub,gmodule.pl} || true
+
+}
+
+
+package() {
+	cd "${srcdir}/grub/"
+
+	echo "Package grub ${_EFI_ARCH} efi stuff..."
+	_package_grub-efi
+
+	echo "Package grub bios stuff..."
+	_package_grub-common_and_bios
+}
+
+

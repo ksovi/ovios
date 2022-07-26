@@ -1,0 +1,24 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=dejagnu 
+pkgver=1.6.3
+pkgrel=1 
+arch=(x86_64) 
+pkgdesc="The DejaGnu package contains a framework for running test suites on GNU tools."
+source=(${pkgname}-$pkgver.tar.gz) 
+groups=(ovios) 
+ 
+build() { 
+	cd $pkgname-$pkgver
+	mkdir build
+	cd build
+	../configure --prefix=/usr
+	makeinfo --html --no-split -o doc/dejagnu.html ../doc/dejagnu.texi
+	makeinfo --plaintext       -o doc/dejagnu.txt  ../doc/dejagnu.texi
+} 
+ 
+package() {
+	cd $pkgname-$pkgver/build
+	make DESTDIR=${pkgdir} install
+	install -v -dm755  ${pkgdir}/usr/share/doc/dejagnu-${pkgver}
+	install -v -m644   doc/dejagnu.{html,txt} ${pkgdir}/usr/share/doc/dejagnu-${pkgver}
+}

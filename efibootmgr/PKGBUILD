@@ -1,0 +1,33 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=efibootmgr
+pkgver=17
+pkgrel=1
+arch=(x86_64)
+source=(https://mandoc.bsd.lv/snapshots/mandoc-${pkgver}.tar.gz)
+groups=('ovios')
+pkgdesc="Linux user-space application to modify the EFI Boot Manager"
+source=(https://github.com/rhboot/efibootmgr/archive/${pkgver}/efibootmgr-${pkgver}.tar.gz)
+
+prepare() {
+  cd "${pkgname}-${pkgver}"
+  # removing hotfix function declaration:
+  # https://github.com/rhboot/efibootmgr/issues/128
+  sed -e '/extern int efi_set_verbose/d' -i src/efibootmgr.c
+  sed 's/-Werror//' -i Make.defaults
+}
+
+build() {
+  cd "${pkgname}-${pkgver}"
+  make libdir='/usr/lib' sbindir='/usr/bin' EFIDIR='ovios' EFI_LOADER=grubx64.efi
+}
+
+package() {
+  cd "${pkgname}-${pkgver}"
+  make DESTDIR="${pkgdir}" \
+       libdir='/usr/lib' \
+       sbindir='/usr/bin' \
+       EFIDIR='ovios' \
+       install
+  install -vDm 644 {AUTHORS,README,README.md,TODO} \
+    -t "${pkgdir}/usr/share/doc/${pkgname}"
+}

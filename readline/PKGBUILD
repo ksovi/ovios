@@ -1,0 +1,25 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=readline 
+pkgver=8.1.2
+pkgrel=1 
+arch=(x86_64) 
+pkgdesc="The Readline package is a set of libraries that offers command-line editing and history capabilities."
+source=(readline-$pkgver.tar.gz) 
+groups=(ovios) 
+ 
+build() { 
+	cd $pkgname-$pkgver
+	sed -i '/MV.*old/d' Makefile.in
+	sed -i '/{OLDSUFF}/c:' support/shlib-install
+	./configure --prefix=/usr  \
+				--disable-static \
+				--docdir=/usr/share/doc/readline-${pkgver}
+	make SHLIB_LIBS="-lncurses"
+} 
+ 
+package() {
+	cd $pkgname-$pkgver
+	mkdir -p ${pkgdir}/usr/share/doc/
+	make SHLIB_LIBS="-lncurses" DESTDIR=${pkgdir} install
+	install -v -m644 doc/*.{ps,pdf,html,dvi} ${pkgdir}/usr/share/doc/readline-${pkgver}
+}

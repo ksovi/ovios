@@ -1,0 +1,32 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=inetutils 
+pkgver=2.2
+pkgrel=1 
+pkgdesc="The Inetutils package contains programs for basic networking." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.xz)
+
+build() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+	./configure --prefix=/usr        \
+            --bindir=/usr/bin    \
+            --localstatedir=/var \
+            --disable-logger     \
+            --disable-whois      \
+            --disable-rcp        \
+            --disable-rexec      \
+            --disable-rlogin     \
+            --disable-rsh        \
+            --disable-servers
+        make
+}
+
+package() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+        make DESTDIR="$pkgdir" install
+        mkdir ${pkgdir}/usr/sbin
+	mv -v ${pkgdir}/usr/{,s}bin/ifconfig
+}

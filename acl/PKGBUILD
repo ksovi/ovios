@@ -1,0 +1,22 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=acl
+pkgver=2.3.1
+pkgrel=1
+pkgdesc="The Acl package contains utilities to administer Access Control Lists"
+
+arch=('any') 
+groups=(ovios) 
+source=(${pkgname}-${pkgver}.tar.xz)
+build() { 
+	cd $srcdir/$pkgname-$pkgver
+	./configure --prefix=/usr    \
+            --disable-static \
+            --docdir=/usr/share/doc/${pkgname}-${pkgver}
+	make
+} 
+ 
+package() { 
+  cd $srcdir/$pkgname-$pkgver
+  
+  make DESTDIR=$pkgdir install
+}

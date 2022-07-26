@@ -1,0 +1,32 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=kmod
+pkgver=29
+pkgrel=1 
+pkgdesc="The Kmod package contains libraries and utilities for loading kernel module." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.xz)
+
+build() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	./configure --prefix=/usr          \
+            --sysconfdir=/etc      \
+            --with-openssl         \
+            --with-xz              \
+            --with-zstd            \
+            --with-zlib
+    make
+}
+
+package() { 
+        cd "$srcdir/$pkgname-$pkgver"
+        make DESTDIR="$pkgdir" MANSUFFIX=ssl install
+		mkdir -p ${pkgdir}/usr/sbin
+		mkdir -p ${pkgdir}/usr/bin
+		for target in depmod insmod modinfo modprobe rmmod; do
+		  ln -sfv ../../bin/kmod ${pkgdir}/usr/sbin/$target
+		done
+		ln -sfv kmod ${pkgdir}/usr/bin/lsmod
+}

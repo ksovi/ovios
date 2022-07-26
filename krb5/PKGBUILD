@@ -1,0 +1,78 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=krb5
+_pkgvermajor=1.19
+pkgver=1.19.3
+pkgrel=1
+pkgdesc='The Kerberos network authentication system'
+url='https://web.mit.edu/kerberos/'
+arch=('x86_64')
+license=('custom')
+groups=(ovios)
+provides=(
+  libgssapi_krb5.so
+  libgssrpc.so
+  libk5crypto.so
+  libkadm5clnt_mit.so
+  libkadm5srv_mit.so
+  libkdb5.so
+  libkdb_ldap.so
+  libkrad.so
+  libkrb5.so
+  libkrb5support.so
+  libverto.so
+)
+backup=(
+  'etc/krb5.conf'
+  'var/lib/krb5kdc/kdc.conf'
+)
+options=('!emptydirs')
+source=(https://web.mit.edu/kerberos/dist/krb5/${_pkgvermajor}/${pkgname}-${pkgver}.tar.gz
+        krb5-config_LDFLAGS.patch
+	krb5-openssl3.patch)
+
+prepare() {
+  cd ${pkgname}-${pkgver}
+
+  # cf https://bugs.gentoo.org/show_bug.cgi?id=448778
+  patch -Np1 < "${srcdir}"/krb5-config_LDFLAGS.patch
+  # openssl3 patch
+  patch -Np1 < "${srcdir}"/krb5-openssl3.patch
+  # FS#25384
+  sed -i "/KRB5ROOT=/s/\/local//" src/util/ac_check_krb5.m4
+}
+
+build() {
+   cd ${pkgname}-${pkgver}/src
+   export CFLAGS+=" -fPIC -fno-strict-aliasing -fstack-protector-all"
+   export CPPFLAGS+=" -I/usr/include/et"
+   autoconf
+   ./configure --prefix=/usr \
+               --sysconfdir=/etc \
+               --localstatedir=/var/lib  \
+	       --enable-shared \
+               --with-system-et \
+               --with-system-ss \
+               --disable-rpath \
+               --without-tcl \
+               --enable-dns-for-realm \
+               --with-ldap \
+               --without-system-verto
+   make
+}
+
+package() {
+   cd ${pkgname}-${pkgver}/src
+   make DESTDIR="${pkgdir}" EXAMPLEDIR=/usr/share/doc/${pkgname}/examples install
+
+   # Fix FS#29889
+   install -m 644 plugins/kdb/ldap/libkdb_ldap/kerberos.{ldif,schema} \
+     "${pkgdir}/usr/share/doc/${pkgname}/examples"
+
+   install -Dpm 644 config-files/krb5.conf -t "${pkgdir}/etc"
+   install -Dpm 644 config-files/kdc.conf -t "${pkgdir}/var/lib/krb5kdc"
+
+   install -Dm 644 util/ac_check_krb5.m4 -t "${pkgdir}/usr/share/aclocal"
+
+   install -Dm 644 "${srcdir}"/${pkgname}-${pkgver}/NOTICE \
+     "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

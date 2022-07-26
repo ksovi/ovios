@@ -1,0 +1,20 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=lmdb
+pkgver=0.9.29
+pkgrel=1
+pkgdesc="The lmdb package is a fast, compact, key-value embedded data store"
+arch=('x86_64')
+
+source=("https://github.com/LMDB/lmdb/archive/LMDB_${pkgver}.tar.gz")
+
+build() {
+  cd lmdb-LMDB_$pkgver
+	cd libraries/liblmdb
+	make       
+	sed -i 's| liblmdb.a||' Makefile
+}
+
+package() {
+  cd lmdb-LMDB_$pkgver/libraries/liblmdb
+  make prefix="$pkgdir"/usr install 
+}

@@ -1,0 +1,21 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=perl-net-sslay
+pkgver=1.92
+pkgrel=1
+pkgdesc="Net::SSLeay is a PERL extension for using OpenSSL."
+arch=(any)
+groups=(ovios)
+
+source=(https://cpan.metacpan.org/authors/id/C/CH/CHRISN/Net-SSLeay-${pkgver}.tar.gz)
+
+
+build() {
+  cd Net-SSLeay-${pkgver}
+  yes '' | perl Makefile.PL
+  make
+}
+
+package() {
+	cd Net-SSLeay-${pkgver}
+	make DESTDIR=${pkgdir} install
+}

@@ -1,0 +1,22 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=python-pyasn1
+pkgver=0.4.8
+pkgrel=7
+arch=('any')
+url="https://github.com/etingof/pyasn1"
+license=('BSD')
+pkgdesc="ASN.1 library for Python 3"
+groups=(ovios)
+source=(https://pypi.io/packages/source/p/pyasn1/pyasn1-$pkgver.tar.gz)
+
+
+check() {
+  cd pyasn1-${pkgver}
+  python setup.py test
+}
+
+package() {
+  cd pyasn1-${pkgver}
+  python setup.py install --root="${pkgdir}"
+  install -D -m 644 LICENSE.rst "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

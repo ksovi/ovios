@@ -1,0 +1,24 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=nano
+pkgver=6.2
+pkgrel=1
+pkgdesc="a small, simple text editor which aims to replace Pico, the default editor in the Pine package."
+arch=('i686' 'x86_64')
+groups=(ovios)
+source=(https://www.nano-editor.org/dist/v6/nano-${pkgver}.tar.xz)
+
+
+
+build() {
+	 cd ${pkgname}-${pkgver}
+	 ./configure --prefix=/usr     \
+            --sysconfdir=/etc \
+            --enable-utf8     \
+            --docdir=/usr/share/doc/nano-${pkgver}
+}
+
+package() {
+	 cd ${pkgname}-${pkgver}
+	 make DESTDIR=${pkgdir} install
+	install -v -m644 doc/{nano.html,sample.nanorc} ${pkgdir}/usr/share/doc/nano-${pkgver}
+}

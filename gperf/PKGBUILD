@@ -1,0 +1,21 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=gperf 
+pkgver=3.1
+pkgrel=1 
+pkgdesc="Gperf generates a perfect hash function from a key set." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.gz)
+
+build() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+		./configure --prefix=/usr --docdir=/usr/share/doc/${pkgname}-${pkgver}
+        make
+}
+
+package() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+        make DESTDIR="$pkgdir" install
+}

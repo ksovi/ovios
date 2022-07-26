@@ -1,0 +1,49 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=gcc
+pkgver=11.2.0
+pkgrel=1
+pkgdesc="The GCC package contains the GNU compiler collection, which includes the C and C++ compilers."
+
+arch=('any') 
+groups=(ovios)
+
+source=(${pkgname}-${pkgver}.tar.xz)
+
+
+build() {
+	cd $srcdir/$pkgname-$pkgver
+	sed -e '/static.*SIGSTKSZ/d' \
+            -e 's/return kAltStackSize/return SIGSTKSZ * 4/' \
+            -i libsanitizer/sanitizer_common/sanitizer_posix_libcdep.cpp
+	case $(uname -m) in
+		x86_64)
+			sed -e '/m64=/s/lib64/lib/' \
+			-i.orig gcc/config/i386/t-linux64
+		;;
+	esac
+	
+	mkdir build-gcc
+	cd build-gcc
+	
+	../configure --prefix=/usr        \
+             LD=ld                    \
+             --enable-languages=c,c++ \
+             --disable-multilib       \
+             --disable-bootstrap      \
+             --with-system-zlib
+	make
+} 
+ 
+package() { 
+        cd $srcdir/$pkgname-$pkgver/build-gcc
+        make DESTDIR=$pkgdir install
+	rm -rf ${pkgdir}/usr/lib/gcc/$(gcc -dumpmachine)/11.2.0/include-fixed/bits/
+	
+	ln -svr ${pkgdir}/usr/bin/cpp ${pkgdir}/usr/lib
+        mkdir -p ${pkgdir}/usr/lib/bfd-plugins/	
+	ln -sfv ../../../usr/libexec/gcc/x86_64-pc-linux-gnu/11.2.0/liblto_plugin.so \
+        ${pkgdir}/usr/lib/bfd-plugins/
+	
+	mkdir -p ${pkgdir}/usr/share/gdb/auto-load/usr/lib
+	mv -v ${pkgdir}/usr/lib/*gdb.py ${pkgdir}/usr/share/gdb/auto-load/usr/lib
+}

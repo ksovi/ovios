@@ -1,0 +1,3 @@
+# OviOS Linux v4.00 and up comes with openssl v3. 
+# Some packages are built using an openssl v1 dependency, like python cryptography modules
+# This package provides access to openssl v1 libraries for compatibility reasons only.

@@ -1,0 +1,20 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=ethtool
+pkgver=5.17
+pkgrel=1
+arch=(x86_64)
+source=(https://www.kernel.org/pub/software/network/ethtool/${pkgname}-${pkgver}.tar.xz)
+
+groups=(ovios)
+depends=(libmnl)
+
+build() {
+cd $pkgname-$pkgver
+	./configure --prefix=/usr
+	make
+}
+
+package() {
+	cd $pkgname-$pkgver
+	make DESTDIR=${pkgdir} install
+}

@@ -1,0 +1,20 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=keyutils
+pkgver=1.6.1
+pkgrel=1
+pkgdesc="Keyutils is a set of utilities for managing the key retention facility in the kernel, which can be used by filesystems, block devices and more to gain and retain the authorization and encryption keys required to perform secure operations."
+arch=('i686' 'x86_64')
+groups=(ovios)
+source=(https://people.redhat.com/~dhowells/keyutils/keyutils-${pkgver}.tar.bz2)
+
+build() {
+ cd $srcdir/$pkgname-$pkgver
+ sed -i 's:$(LIBDIR)/$(PKGCONFIG_DIR):/usr/lib/pkgconfig:' Makefile
+ make
+}
+
+package() {
+ cd $srcdir/$pkgname-$pkgver
+ make DESTDIR=$pkgdir NO_ARLIB=1 LIBDIR=/usr/lib BINDIR=/usr/bin SBINDIR=/usr/sbin install
+}
+

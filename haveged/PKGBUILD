@@ -1,0 +1,28 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=haveged
+pkgver=1.9.17
+pkgrel=1
+pkgdesc='Entropy harvesting daemon using CPU timings'
+arch=('x86_64')
+url='https://github.com/jirka-h/haveged'
+license=('GPL')
+depends=('glibc')
+groups=(ovios)
+
+#source=("$pkgname-$pkgver.tar.gz::https://github.com/jirka-h/$pkgname/archive/v$pkgver.tar.gz")
+source=(v1.9.17.tar.gz)
+build() {
+  cd $pkgname-$pkgver
+
+  ./configure \
+      --prefix=/usr \
+      --bindir=/usr/bin \
+      --sbindir=/usr/sbin
+  make
+}
+
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir" install
+}

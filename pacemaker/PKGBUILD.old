@@ -1,0 +1,58 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=pacemaker
+pkgver=2.1.2
+pkgrel=1
+pkgdesc="advanced, scalable high-availability cluster resource manager"
+arch=('i686' 'x86_64')
+url="https://github.com/ClusterLabs/${pkgname}/"
+license=('GPL2')
+groups=(ovios-cluster)
+source=("https://github.com/ClusterLabs/$pkgname/archive/Pacemaker-$pkgver.tar.gz"
+        'crm_report.in')
+prepare() {
+  cd ${pkgname}-Pacemaker-${pkgver}
+  ./autogen.sh
+}
+
+build() {
+  cd ${pkgname}-Pacemaker-${pkgver}
+  PKG_CONFIG_PATH=/usr/lib/pkgconfig:/usr/lib64/pkgconfig  ./configure \
+    CPPFLAGS= \
+    --sbindir=/usr/sbin \
+    --sysconfdir=/etc \
+    --libdir=/usr/lib \
+    --libexecdir=/usr/lib \
+    --localstatedir=/var \
+    --disable-static \
+    --disable-fatal-warnings \
+    --with-version=$pkgver-$pkgrel \
+    --disable-systemd \
+    --disable-upstart \
+    --with-corosync \
+    --with-nagios \
+    --with-acl \
+    --with-cibsecrets \
+    --without-profiling \
+    --without-coverage \
+    --with-configdir=/etc/pacemaker \
+    --with-initdir=/etc/init.d
+
+  # Fight unused direct deps
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0 /g' -e 's/    if test "$export_dynamic" = yes && test -n "$export_dynamic_flag_spec"; then/      func_append compile_command " -Wl,-O1,--as-needed"\n      func_append finalize_command " -Wl,-O1,--as-needed"\n\0/' libtool
+  make V=0
+}
+
+package() {
+  cd ${pkgname}-Pacemaker-${pkgver}
+  make DESTDIR="${pkgdir}" install
+  chown root.root "${pkgdir}"/etc/pacemaker
+  chmod 0755 "${pkgdir}"/etc/pacemaker
+  cd "$srcdir"
+  
+  chmod a+x "$pkgdir/usr/share/pacemaker/tests/cts/CTSlab.py"
+  find "$pkgdir" -name '*.xml' -type f -print0 | xargs -0 chmod a-x
+  rm -fr "$pkgdir/etc/init.d"
+  #rm -f "$pkgdir/usr/bin/fence_pcmk"
+  mv "$pkgdir/usr/sbin/crm_report" "$pkgdir/usr/sbin/crm_report.pacemaker"
+  install -Dm755 crm_report.in "$pkgdir/usr/sbin/crm_report"
+}

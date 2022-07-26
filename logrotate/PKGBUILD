@@ -1,0 +1,36 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=logrotate
+pkgver=3.19.0
+pkgrel=1
+pkgdesc="Rotates system logs automatically"
+arch=('i686' 'x86_64')
+url="https://github.com/logrotate/logrotate"
+license=('GPL')
+groups=('ovios')
+backup=('etc/logrotate.conf')
+source=("https://github.com/logrotate/logrotate/archive/${pkgver}.tar.gz"
+       'logrotate.conf')
+
+options=(!emptydirs)
+build() {
+       cd "$srcdir/${pkgname}-${pkgver}"
+
+       ./autogen.sh
+       ./configure \
+               --prefix=/usr \
+               --sbindir=/usr/sbin \
+               --mandir=/usr/share/man \
+               --with-acl --disable-static
+       make
+}
+
+
+package() {
+       cd "$srcdir/${pkgname}-${pkgver}"
+
+       make DESTDIR="$pkgdir" install
+
+       install -dm755 "$pkgdir/etc/logrotate.d"
+       install -Dm644 "$srcdir/logrotate.conf" "$pkgdir/etc/logrotate.conf"
+
+}

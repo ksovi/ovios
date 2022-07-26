@@ -1,0 +1,20 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=m4 
+pkgver=1.4.19 
+pkgrel=1 
+pkgdesc='The m4 package contains a macro processor' 
+
+arch=('any') 
+groups=(ovios) 
+source=(m4-${pkgver}.tar.xz)
+
+build() { 
+  cd $srcdir/$pkgname-$pkgver 
+  ./configure --prefix=/usr
+  make 
+} 
+ 
+package() { 
+  cd $srcdir/$pkgname-$pkgver 
+  make DESTDIR=$pkgdir install 
+}

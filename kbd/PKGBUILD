@@ -1,0 +1,25 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=kbd
+pkgver=2.4.0
+pkgrel=1
+pkgdesc="The Kbd package contains key-table files, console fonts, and keyboard utilities.." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.xz
+kbd-2.4.0-backspace-1.patch)
+
+build() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	patch -Np1 -i ../../kbd-2.4.0-backspace-1.patch
+	sed -i '/RESIZECONS_PROGS=/s/yes/no/' configure
+    sed -i 's/resizecons.8 //' docs/man/man8/Makefile.in
+	./configure --prefix=/usr --disable-vlock
+	make
+}
+
+package() { 
+    cd "$srcdir/$pkgname-$pkgver"
+	make DESTDIR=${pkgdir} install
+}

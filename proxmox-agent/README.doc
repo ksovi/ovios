@@ -1,0 +1,49 @@
+1. Backup the files we're gonna change
+
+root@pve:~# cp /usr/share/pve-manager/js/pvemanagerlib.js /usr/share/pve-manager/js/pvemanagerlib.js.orig
+root@pve:~# cp /usr/share/perl5/PVE/Storage/ZFSPlugin.pm /usr/share/perl5/PVE/Storage/ZFSPlugin.pm.orig
+
+2. Copy the new files to the right directories
+
+root@pve:~# cp ZFSPlugin.pm /usr/share/perl5/PVE/Storage/ZFSPlugin.pm
+root@pve:~# cp OviOSiSCSI.pm /usr/share/perl5/PVE/Storage/LunCmd/OviOSiSCSI.pm
+root@pve:~# cp pvemanagerlib.js /usr/share/pve-manager/js/pvemanagerlib.js
+
+
+3. Restart the service
+
+root@pve:~# systemctl restart pvedaemon.service
+
+4. generate the key
+root@pve:~# mkdir /etc/pve/priv/zfs
+root@pve:~# ssh-keygen -f /etc/pve/priv/zfs/192.168.43.166_id_rsa
+
+# verify the key is there
+root@pve:~# cat /etc/pve/priv/zfs/192.168.43.166_id_rsa.pub
+
+# copy to ovios 
+root@pve:~# ssh-copy-id -i /etc/pve/priv/zfs/192.168.43.166_id_rsa.pub root@192.168.43.166
+
+# Test Login
+
+root@pve:~# ssh -i /etc/pve/priv/zfs/192.168.43.166_id_rsa root@192.168.43.166
+
+
+
+On OviOS Linux:
+
+1. Allow root ssh (before you copy the key from Proxmox)
+
+ovios-shell> options ssh.allow.root 1
+Option ssh.allow.root is already on
+ovios-shell> services restart sshd
+  *  Stopping SSH Server...                                                                                                                                                                                                         [  OK  ]
+  *  Starting SSH Server...                                                                                                                                                                                                         [  OK  ]
+ovios-shell>
+
+
+2. Add the proxmox key (if not added with ssh-copy-id)
+Paste to the following file the key from the proxmox server: 
+Ex: 
+ovios-indt:~ # vim /root/.ssh/authorized_keys
+ssh-rsa AAAAB3NzaC1yc2EAAAAwF.........FAKE-----KEY------5YJHtbte6TE+oTyOBJf root@pve

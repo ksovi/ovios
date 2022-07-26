@@ -1,0 +1,24 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=libxml2
+pkgver=2.9.13
+pkgrel=1
+pkgdesc="The libxml2 package contains libraries and utilities used for parsing XML files."
+arch=(any)
+source=(https://download.gnome.org/sources/libxml2/2.9/libxml2-${pkgver}.tar.xz)
+
+groups=(ovios)
+
+build() {
+cd $pkgname-$pkgver
+    ./configure --prefix=/usr    \
+            --disable-static \
+            --with-history   \
+            --with-python=/usr/bin/python3 \
+            --docdir=/usr/share/doc/libxml2-${pkgver}
+	make
+}
+
+package() {
+	cd $pkgname-$pkgver
+	make DESTDIR=${pkgdir} install
+}

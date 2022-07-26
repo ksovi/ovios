@@ -1,0 +1,26 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=rpcbind
+pkgver=1.2.6
+pkgrel=1
+pkgdesc="The rpcbind program is a replacement for portmap. It is required for import or export of Network File System (NFS) shared directories."
+arch=('i686' 'x86_64')
+groups=(ovios)
+source=(https://downloads.sourceforge.net/rpcbind/rpcbind-${pkgver}.tar.bz2
+	rpcbind-1.2.6-vulnerability_fixes-1.patch)
+
+build() {
+	 cd $srcdir/$pkgname-$pkgver
+	 sed -i "/servname/s:rpcbind:sunrpc:" src/rpcbind.c
+	 patch -Np1 -i ../rpcbind-1.2.6-vulnerability_fixes-1.patch
+	 ./configure --prefix=/usr                                  \
+				--bindir=/usr/sbin                             \
+				--with-rpcuser=root                            \
+				--enable-warmstarts                            \
+				--without-systemdsystemunitdir 
+	 make
+}
+
+package() {
+	 cd $srcdir/$pkgname-$pkgver
+	 make DESTDIR=$pkgdir install
+}

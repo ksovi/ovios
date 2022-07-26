@@ -1,0 +1,45 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=nss
+pkgver=3.77
+pkgrel=2
+pkgdesc="The Network Security Services (NSS) package is a set of libraries designed to support cross-platform development of security-enabled client and server applications"
+arch=(any)
+groups=(ovios)
+
+source=(https://archive.mozilla.org/pub/security/nss/releases/NSS_3_77_RTM/src/nss-${pkgver}.tar.gz
+	nss-3.77-standalone-1.patch)
+prepare() {
+  cd ${pkgname}-${pkgver}
+  patch -Np1 -i ../nss-3.77-standalone-1.patch
+}
+
+
+build() {
+  cd ${pkgname}-${pkgver}/nss
+  make BUILD_OPT=1                  \
+  NSPR_INCLUDE_DIR=/usr/include/nspr  \
+  USE_SYSTEM_ZLIB=1                   \
+  ZLIB_LIBS=-lz                       \
+  NSS_ENABLE_WERROR=0                 \
+  $([ $(uname -m) = x86_64 ] && echo USE_64=1) \
+  $([ -f /usr/include/sqlite3.h ] && echo NSS_USE_SYSTEM_SQLITE=1)
+}
+
+package() {
+	cd ${pkgname}-${pkgver}/dist
+	mkdir -pv ${pkgdir}/usr/lib 
+	mkdir -pv  ${pkgdir}/usr/include/nss
+	mkdir -pv ${pkgdir}/usr/bin
+	mkdir -pv ${pkgdir}/usr/lib/pkgconfig
+
+	install -v -m755 Linux*/lib/*.so              ${pkgdir}/usr/lib/
+	install -v -m644 Linux*/lib/{*.chk,libcrmf.a} ${pkgdir}/usr/lib/
+	install -v -m755 -d                           ${pkgdir}/usr/include/nss/
+	cp -v -RL {public,private}/nss/*              ${pkgdir}/usr/include/nss/
+	chmod -v 644                                  ${pkgdir}/usr/include/nss/* 
+	install -v -m755 Linux*/bin/{certutil,nss-config,pk12util} ${pkgdir}/usr/bin/
+	install -v -m644 Linux*/lib/pkgconfig/nss.pc  ${pkgdir}/usr/lib/pkgconfig/
+	ln -s pkcs11/p11-kit-trust.so "$pkgdir/usr/lib/p11-kit-trust.so"
+        ln -sf p11-kit-trust.so "$pkgdir/usr/lib/libnssckbi.so"
+}
+

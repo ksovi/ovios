@@ -1,0 +1,22 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=XML-Parser
+pkgver=2.46
+_majver=5.34
+pkgrel=1 
+pkgdesc="The XML::Parser module is a Perl interface to James Clark's XML parser, Expat." 
+arch=(i686 x86_64) 
+
+groups=(ovios)
+
+source=($pkgname-$pkgver.tar.gz)
+
+build() { 
+        cd "$srcdir/$pkgname-$pkgver"
+		perl Makefile.PL
+        make
+}
+
+package() { 
+        cd "$srcdir/$pkgname-$pkgver" 
+        make DESTDIR="$pkgdir" install
+}

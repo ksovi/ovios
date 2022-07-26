@@ -1,0 +1,17 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=ioping
+pkgver=1.2
+pkgrel=1
+arch=(x86_64)
+source=(https://github.com/koct9i/ioping/archive/refs/tags/v${pkgver}.tar.gz)
+groups=(ovios)
+
+build() { 
+	cd $pkgname-$pkgver  
+	make PREFIX=/usr  
+}  
+
+package() {  
+	cd $pkgname-$pkgver  
+	make PREFIX="$pkgdir"/usr/  install  
+}

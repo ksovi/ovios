@@ -1,0 +1,27 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=pacman-ovios
+_pkgname=pacman
+pkgver=5.2.2
+pkgrel=1
+pkgdesc="A library-based package manager with dependency support"
+arch=('x86_64')
+license=('GPL')
+
+groups=('ovios')
+
+source=(${_pkgname}-${pkgver}.tar.gz
+	makepkg.conf)
+
+build() {
+   cd $_pkgname-$pkgver
+   ./configure --prefix=/usr --sysconfdir=/etc  --localstatedir=/var \
+    --enable-doc  --with-scriptlet-shell=/bin/bash
+   make V=1
+}
+
+package() {
+    cd $_pkgname-$pkgver
+    make DESTDIR="$pkgdir" install
+    cp ../makepkg.conf ${pkgdir}/etc/
+}
+

@@ -1,0 +1,35 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=ypserv
+pkgver=4.1
+pkgrel=2
+pkgdesc='Linux NIS Server'
+arch=('i686' 'x86_64')
+url='https://github.com/thkukuk/ypserv'
+license=('GPL2')
+groups=(ovios)
+backup=('etc/ypserv.conf' 'etc/netgroup' 'etc/securenets' 'etc/yp/Makefile')
+source=("$url/releases/download/v$pkgver/ypserv-$pkgver.tar.xz"
+        'ypserv.conf')
+
+prepare() {
+  cd $pkgname-$pkgver
+  sed -i -r -e 's,AC_CHECK_HEADERS\(crypt.h\),AC_CHECK_HEADERS([paths.h crypt.h]),' \
+      configure.ac
+  autoreconf -fiv
+}
+
+build() {
+  cd $pkgname-$pkgver
+  ./configure --prefix=/usr --sbindir=/usr/sbin
+  make V=0
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="${pkgdir}" install
+  install -D -m644 etc/netgroup "${pkgdir}"/etc/netgroup
+  install -D -m644 etc/ypserv.conf "${pkgdir}"/etc/ypserv.conf
+  install -D -m644 etc/securenets "${pkgdir}"/etc/securenets
+  install -D -m644 "${pkgdir}"/var/yp/Makefile "${pkgdir}"/etc/yp/Makefile
+  rm -fr "${pkgdir}/var"
+}

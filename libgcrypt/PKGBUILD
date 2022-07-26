@@ -1,0 +1,21 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=libgcrypt
+pkgver=1.10.1
+pkgrel=1
+pkgdesc="The libgcrypt package contains a general purpose crypto library based on the code used in GnuPG."
+arch=(any)
+source=(ftp://ftp.gnupg.org/gcrypt/libgcrypt/libgcrypt-${pkgver}.tar.bz2)
+
+groups=(ovios)
+depends=(libgpg-error)
+
+build() {
+cd $pkgname-$pkgver
+    ./configure --prefix=/usr
+	make
+}
+
+package() {
+	cd $pkgname-$pkgver
+	make DESTDIR=${pkgdir} install
+}

@@ -1,0 +1,23 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=libxslt
+pkgver=1.1.35
+pkgrel=1
+pkgdesc="The libxslt package contains XSLT libraries used for extending libxml2 libraries to support XSLT files."
+arch=(any)
+source=(https://download.gnome.org/sources/libxslt/1.1/libxslt-${pkgver}.tar.xz)
+
+groups=(ovios)
+depends=(libxml2)
+
+build() {
+cd $pkgname-$pkgver
+    sed -i s/3000/5000/ libxslt/transform.c doc/xsltproc.{1,xml}
+	./configure --prefix=/usr --disable-static --without-python
+	make
+}
+
+package() {
+	cd $pkgname-$pkgver
+	sed -e 's@\$Date\$@16 February 2022@' -i doc/xsltproc.1
+	make DESTDIR=${pkgdir} install
+}

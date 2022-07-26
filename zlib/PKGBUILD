@@ -1,0 +1,22 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=zlib 
+pkgver=1.2.12 
+pkgrel=2 
+pkgdesc='contains compression and decompression routines' 
+url='https://www.zlib.net/' 
+arch=('any') 
+groups=(ovios) 
+source=('zlib-1.2.12.tar.xz')
+
+
+build() {
+  cd $srcdir/$pkgname-$pkgver
+  ./configure --prefix=/usr
+  make
+}
+ 
+package() { 
+  cd $srcdir/$pkgname-$pkgver
+  make DESTDIR=$pkgdir install
+  rm -f ${pkgdir}/usr/lib/libz.a
+}

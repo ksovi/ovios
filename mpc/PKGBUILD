@@ -1,0 +1,25 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=mpc
+pkgver=1.2.1
+pkgrel=1
+pkgdesc="The MPC package contains a library for the arithmetic of complex numbers with arbitrarily high precision and correct rounding of the result"
+
+arch=('any') 
+groups=(ovios) 
+source=(${pkgname}-${pkgver}.tar.gz)
+
+build() { 
+	cd $srcdir/$pkgname-$pkgver
+	./configure --prefix=/usr    \
+            --disable-static \
+            --docdir=/usr/share/doc/${pkgname}-${pkgver}
+	make
+	make html
+} 
+ 
+package() { 
+  cd $srcdir/$pkgname-$pkgver
+  
+  make DESTDIR=$pkgdir install
+  make DESTDIR=$pkgdir install-html
+}

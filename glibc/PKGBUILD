@@ -1,0 +1,62 @@
+# Packager: Ovi Chis <ovi@ovios.org>
+pkgname=glibc 
+pkgver=2.35
+pkgrel=2
+pkgdesc="The main C library." arch=('i686' 'x86_64') 
+url="http://www.gnu.org/software/libc" license=('GPL') 
+groups=(ovios) 
+install=glibc.install 
+
+backup=(etc/ld.so.conf 
+etc/locale.gen 
+etc/nsswitch.conf
+etc/nscd.conf
+)
+source=(glibc-2.35.tar.xz 
+ld.so.conf
+locale-gen
+locale.gen
+nsswitch.conf)
+
+install=glibc.install
+
+build() {
+cd "$srcdir/$pkgname-$pkgver" 
+patch -Np1 -i ../../glibc-2.35-fhs-1.patch
+mkdir -pv ../glibc-build
+cd ../glibc-build
+echo "rootsbindir=/usr/sbin" > configparms
+../${pkgname}-${pkgver}/configure --prefix=/usr \
+     --disable-werror \
+     --enable-kernel=3.2 \
+     --enable-stack-protector=strong \
+     --with-headers=/usr/include   \
+     libc_cv_slibdir=/usr/lib
+
+  make
+}
+
+package(){
+  cd ${srcdir}/glibc-build
+  install -dm755 ${pkgdir}/etc
+  touch ${pkgdir}/etc/ld.so.conf
+  sed '/test-installation/s@$(PERL)@echo not running@' -i ../${pkgname}-${pkgver}/Makefile
+  make install_root=${pkgdir} install
+  sed '/RTLDLIST=/s@/usr@@g' -i ${pkgdir}/usr/bin/ldd
+  cp -v ../$pkgname-$pkgver/nscd/nscd.conf ${pkgdir}/etc/nscd.conf
+  mkdir -pv ${pkgdir}/var/cache/nscd
+  mkdir -pv ${pkgdir}/usr/lib/locale
+  mkdir -pv ${pkgdir}/usr/lib64/
+ install -dm 755 ${pkgdir}/usr/include/{rpc,rpcsvc}
+ cp ../${pkgname}-${pkgver}/sunrpc/rpc/*.h  ${pkgdir}/usr/include/rpc
+ #cp ../${pkgname}-${pkgver}/sunrpc/rpcsvc/*.h  ${pkgdir}/usr/include/rpcsvc
+ cp ../${pkgname}-${pkgver}/nis/rpcsvc/*.h ${pkgdir}/usr/include/rpcsvc
+ # install configuration files
+ install -m 644 ${srcdir}/ld.so.conf ${pkgdir}/etc
+ install -m 644 ${srcdir}/locale.gen ${pkgdir}/etc
+ install -m 644 ${srcdir}/nsswitch.conf ${pkgdir}/etc
+ install -dm 755 ${pkgdir}/usr/lib/locale
+ install -m755 ${srcdir}/locale-gen ${pkgdir}/usr/bin/
+ ln -sv ../lib/ld-linux-x86-64.so.2 ${pkgdir}/usr/lib64/ld-linux-x86-64.so.2
+ ln -sv ../lib/ld-linux-x86-64.so.2 ${pkgdir}/usr/lib64/ld-lsb-x86-64.so.3
+}

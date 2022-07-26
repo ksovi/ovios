@@ -1,0 +1,12 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=unifont
+pkgver=14.0.01
+pkgrel=1
+arch=(x86_64)
+groups=('ovios')
+source=(https://unifoundry.com/pub/unifont/unifont-${pkgver}/font-builds/unifont-${pkgver}.pcf.gz)
+
+package() {
+  mkdir -pv ${pkgdir}/usr/share/fonts/unifont
+  gunzip -c ${srcdir}/unifont-14.0.01.pcf.gz > ${pkgdir}/usr/share/fonts/unifont/unifont.pcf
+}

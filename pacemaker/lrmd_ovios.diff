@@ -1,0 +1,12 @@
+diff -ur a/lrmd/lrmd_private.h b/lrmd/lrmd_private.h
+--- a/lrmd/lrmd_private.h	2022-04-21 13:13:00.068297163 +0000
++++ b/lrmd/lrmd_private.h	2022-04-21 13:10:50.964954945 +0000
+@@ -32,7 +32,7 @@
+ 
+ #define LRMD_ISOLATION_PROVIDER ".isolation"
+ 
+-GHashTable *rsc_list;
++extern GHashTable *rsc_list;
+ 
+ typedef struct lrmd_rsc_s {
+     char *rsc_id;

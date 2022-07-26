@@ -1,0 +1,20 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=sg3_utils
+pkgver=1.47
+pkgrel=1
+groups=(ovios)
+pkgdesc='The sg3_utils package contains low level utilities for devices that use a SCSI command set.'
+arch=('x86_64')
+
+source=(https://sg.danny.cz/sg/p/sg3_utils-${pkgver}.tar.xz)
+
+build() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+  ./configure --prefix=/usr --disable-static
+  make
+}
+
+package() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+  make DESTDIR="$pkgdir" install
+}

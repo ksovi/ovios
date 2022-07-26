@@ -1,0 +1,25 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=liburing
+pkgver=2.1
+pkgrel=1
+pkgdesc="Linux-native io_uring I/O access library"
+arch=('x86_64')
+url="https://kernel.dk/cgit/liburing/"
+license=('LGPL2.1' 'MIT')
+groups=(ovios)
+
+provides=('liburing.so')
+source=(https://kernel.dk/cgit/liburing/snapshot/liburing-${pkgver}.tar.gz)
+
+build() {
+  cd "$pkgname-${pkgver}"
+  ./configure --prefix='/usr' \
+              --mandir='/usr/share/man'
+  make
+}
+
+package() {
+  cd "$pkgname-${pkgver}"
+  make DESTDIR="$pkgdir" install
+  install -vDm 644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname"
+}

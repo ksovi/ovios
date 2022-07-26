@@ -1,0 +1,33 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+pkgname=binutils 
+pkgver=2.38
+pkgrel=1 
+arch=(x86_64) 
+pkgdesc="The Binutils package contains a linker, an assembler, and other tools for handling object files."
+source=(${pkgname}-$pkgver.tar.xz
+binutils-${pkgver}-lto_fix-1.patch) 
+groups=(ovios) 
+ 
+build() { 
+	cd $pkgname-$pkgver
+	patch -Np1 -i ../../binutils-${pkgver}-lto_fix-1.patch
+	sed -e '/R_386_TLS_LE /i \   || (TYPE) == R_386_TLS_IE \\' \
+		-i ./bfd/elfxx-x86.h
+	mkdir build 
+	cd build
+	../configure --prefix=/usr  \
+             --enable-gold       \
+             --enable-ld=default \
+             --enable-plugins    \
+             --enable-shared     \
+             --disable-werror    \
+             --enable-64-bit-bfd \
+             --with-system-zlib
+	make tooldor=/usr
+}
+ 
+package() {
+	cd $pkgname-$pkgver/build
+	make DESTDIR=${pkgdir} tooldor=/usr install
+	rm -fv ${pkgdir}/usr/lib/lib{bfd,ctf,ctf-nobfd,opcodes}.a
+}
