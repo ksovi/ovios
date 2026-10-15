@@ -1,0 +1,39 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package layout
+
+pkgname=libnghttp3
+pkgver=1.18.0
+pkgrel=1
+pkgdesc='HTTP/3 library written in C'
+url='https://github.com/ngtcp2/nghttp3'
+arch=(x86_64)
+license=(MIT)
+depends=(glibc)
+makedepends=(cmake git)
+source=("git+https://github.com/ngtcp2/nghttp3.git#tag=v$pkgver"
+        "git+https://github.com/ngtcp2/sfparse.git")
+sha256sums=('SKIP' 'SKIP')
+
+prepare() {
+  cd nghttp3
+  git submodule init
+  git config submodule.lib/sfparse.url "$srcdir/sfparse"
+  git -c protocol.file.allow=always submodule update
+}
+
+build() {
+  cmake -S nghttp3 -B build \
+    -DCMAKE_BUILD_TYPE=None \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DENABLE_STATIC_LIB=OFF
+  cmake --build build
+}
+
+check() {
+  ctest --test-dir build --output-on-failure
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+  install -Dm644 nghttp3/COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}

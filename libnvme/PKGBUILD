@@ -1,0 +1,28 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package layout
+
+pkgname=libnvme
+pkgver=1.16.2
+pkgrel=2
+pkgdesc='C library for NVM Express on Linux'
+url='https://github.com/linux-nvme/libnvme'
+arch=(x86_64)
+license=('LGPL-2.1-or-later')
+depends=(glibc json-c openssl)
+makedepends=(meson swig python dbus)
+optdepends=('python: for the Python bindings')
+source=("https://github.com/linux-nvme/libnvme/archive/v$pkgver/$pkgname-$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+  arch-meson $pkgname-$pkgver build -Dpython=enabled -Dlibdbus=enabled -Dopenssl=enabled
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+package() {
+  meson install -C build --destdir "$pkgdir"
+}

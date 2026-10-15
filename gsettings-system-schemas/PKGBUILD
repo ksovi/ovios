@@ -1,0 +1,20 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package layout
+
+# TODO(unverified): the upstream Arch PKGBUILD for this package could not be fetched
+# when this file was generated (Arch hosts were unreachable); this is a placeholder
+# that builds an empty-but-installable package. Replace with the real recipe.
+
+pkgname=gsettings-system-schemas
+pkgver=51.0
+pkgrel=1
+pkgdesc='System-wide GSettings schemas'
+url='https://wiki.gnome.org/Projects/dconf'
+arch=(any)
+license=(custom)
+depends=(glib2 dconf)
+
+package() {
+  install -d "$pkgdir/usr/share/doc/$pkgname"
+  echo "gsettings-system-schemas 51.0-1: placeholder package" > "$pkgdir/usr/share/doc/$pkgname/README"
+}

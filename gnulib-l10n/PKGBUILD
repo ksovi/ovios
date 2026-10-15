@@ -1,0 +1,20 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package layout
+
+# TODO(unverified): the upstream Arch PKGBUILD for this package could not be fetched
+# when this file was generated (Arch hosts were unreachable); this is a placeholder
+# that builds an empty-but-installable package. Replace with the real recipe.
+
+pkgname=gnulib-l10n
+pkgver=20241231
+pkgrel=1
+pkgdesc='Localization files for gnulib-based packages'
+url='https://www.gnu.org/software/gnulib/'
+arch=(any)
+license=(custom)
+depends=()
+
+package() {
+  install -d "$pkgdir/usr/share/doc/$pkgname"
+  echo "gnulib-l10n 20241231-1: placeholder package" > "$pkgdir/usr/share/doc/$pkgname/README"
+}

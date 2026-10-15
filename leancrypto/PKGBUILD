@@ -1,0 +1,28 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package layout
+
+pkgname=leancrypto
+pkgver=1.9.1
+pkgrel=1
+pkgdesc='Cryptographic library with PQC (ML-KEM, ML-DSA, SLH-DSA) support and no external dependencies'
+url='https://leancrypto.org'
+arch=(x86_64)
+license=('BSD-3-Clause OR GPL-2.0-only')
+depends=(glibc)
+makedepends=(meson)
+source=("https://github.com/smuellerDD/leancrypto/archive/v$pkgver/$pkgname-$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+  arch-meson $pkgname-$pkgver build
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+package() {
+  meson install -C build --destdir "$pkgdir"
+  install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname" $pkgname-$pkgver/LICENSES/*
+}

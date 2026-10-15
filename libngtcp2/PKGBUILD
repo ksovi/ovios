@@ -1,0 +1,31 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package layout
+
+pkgname=libngtcp2
+_name=ngtcp2
+pkgver=1.25.0
+pkgrel=1
+pkgdesc='Implementation of the IETF QUIC protocol'
+url='https://github.com/ngtcp2/ngtcp2'
+arch=(x86_64)
+license=(MIT)
+depends=(glibc)
+makedepends=(cmake git gnutls libnghttp3 openssl)
+optdepends=('gnutls: for the gnutls crypto helper' 'openssl: for the openssl crypto helper')
+source=("git+https://github.com/ngtcp2/ngtcp2.git#tag=v$pkgver")
+sha256sums=('SKIP')
+
+build() {
+  cmake -S $_name -B build \
+    -DCMAKE_BUILD_TYPE=None \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DENABLE_STATIC_LIB=OFF \
+    -DENABLE_GNUTLS=ON \
+    -DENABLE_OPENSSL=ON
+  cmake --build build
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+  install -Dm644 $_name/COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}

@@ -1,0 +1,40 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package layout
+
+pkgname=qemu-guest-agent
+pkgver=11.1.2
+pkgrel=1
+pkgdesc='QEMU Guest Agent (qemu-ga) for virtual machines'
+arch=(x86_64)
+url='https://www.qemu.org/'
+license=('GPL-2.0-or-later' 'LGPL-2.1-or-later')
+depends=(glib2 glibc systemd-libs)
+makedepends=(meson ninja python python-sphinx python-sphinx_rtd_theme pkgconf)
+source=(https://download.qemu.org/qemu-$pkgver.tar.xz{,.sig}
+        qemu-guest-agent.service
+        99-qemu-guest-agent.rules)
+sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP')
+validpgpkeys=('CEACC9E15534EBABB82D3FA03353C9CEF108B584') # Michael Roth <michael.roth@amd.com>
+
+build() {
+  cd qemu-$pkgver
+  ./configure \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    --localstatedir=/var \
+    --libexecdir=/usr/lib/qemu \
+    --target-list= \
+    --disable-system \
+    --disable-user \
+    --disable-tools \
+    --disable-docs \
+    --enable-guest-agent
+  make qemu-ga
+}
+
+package() {
+  cd qemu-$pkgver
+  install -Dm755 build/qga/qemu-ga "$pkgdir/usr/bin/qemu-ga"
+  install -Dm644 "$srcdir/qemu-guest-agent.service" "$pkgdir/usr/lib/systemd/system/qemu-guest-agent.service"
+  install -Dm644 "$srcdir/99-qemu-guest-agent.rules" "$pkgdir/usr/lib/udev/rules.d/99-qemu-guest-agent.rules"
+}

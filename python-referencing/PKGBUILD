@@ -1,0 +1,26 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package layout
+
+pkgname=python-referencing
+_name=referencing
+pkgver=0.37.0
+pkgrel=3
+pkgdesc='Attribute-based JSON reference resolution'
+arch=(any)
+url="https://pypi.org/project/${_name//_/-}/"
+license=(MIT)
+depends=(python-attrs python-rpds-py)
+makedepends=(python-hatchling python-hatch-vcs python-build python-installer python-wheel)
+source=("https://files.pythonhosted.org/packages/source/${_name::1}/$_name/$_name-$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+  cd $_name-$pkgver
+  python -m build --wheel --no-isolation
+}
+
+package() {
+  cd $_name-$pkgver
+  python -m installer --destdir="$pkgdir" dist/*.whl
+  install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname" COPYING* LICENSE* 2>/dev/null || true
+}
