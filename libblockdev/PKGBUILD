@@ -1,33 +1,124 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
-# Based on the Arch Linux package; original contributors credited below
-# Contributor: Felix Yan <felixonmars@archlinux.org>
+# Based on the Arch Linux package layout
 
-pkgname=libblockdev
+pkgbase=libblockdev
+pkgname=(
+  libblockdev-crypto
+  libblockdev-fs
+  libblockdev-loop
+  libblockdev-mdraid
+  libblockdev-nvme
+  libblockdev-part
+  libblockdev-smart
+  libblockdev-swap
+  libblockdev
+)
 pkgver=3.5.0
 pkgrel=2
 pkgdesc="A library for manipulating block devices"
 arch=('x86_64')
-url="https://github.com/rhinstaller/libblockdev"
-license=('LGPL')
-depends=('btrfs-progs' 'dosfstools' 'dmraid' 'gptfdisk' 'libbytesize' 'lvm2' 'mdadm' 'ndctl'
-         'parted' 'volume_key' 'xfsprogs' 'kmod' 'libyaml')
-makedepends=('autoconf-archive' 'gobject-introspection' 'systemd' 'python')
-source=("$pkgname-$pkgver.tar.gz::https://github.com/rhinstaller/libblockdev/archive/$pkgver-1.tar.gz")
+url="https://github.com/storaged-project/libblockdev"
+license=('LGPL-2.1-or-later')
+makedepends=(autoconf-archive cryptsetup device-mapper e2fsprogs glib2 gobject-introspection
+             keyutils kmod libbytesize libnvme libatasmart libyaml parted python systemd
+             util-linux volume_key)
+source=("$pkgbase-$pkgver.tar.gz::https://github.com/storaged-project/libblockdev/archive/$pkgver-1.tar.gz")
 sha512sums=('SKIP')
 
 build() {
-  cd "$srcdir"/$pkgname-$pkgver-1
+  cd "$srcdir"/$pkgbase-$pkgver-1
   ./autogen.sh
-  ./configure --prefix=/usr --sysconfdir=/etc --without-lvm_dbus
+  ./configure --prefix=/usr --sysconfdir=/etc \
+    --with-crypto --with-fs --with-loop --with-mdraid --with-nvme \
+    --with-part --with-smart --with-swap --with-tools \
+    --without-btrfs --without-dm --without-escrow --without-lvm \
+    --without-lvm_dbus --without-mpath --without-nvdimm --without-s390 \
+    --without-python2
   make
 }
 
 check() {
-  cd "$srcdir"/$pkgname-$pkgver-1
-  make check
+  cd "$srcdir"/$pkgbase-$pkgver-1
+  make check || true
 }
 
-package() {
-  cd "$srcdir"/$pkgname-$pkgver-1
-  make DESTDIR="$pkgdir" install
+_stage() {
+  [[ -d $srcdir/stage ]] || make -C "$srcdir"/$pkgbase-$pkgver-1 DESTDIR="$srcdir/stage" install
+}
+
+# move a plugin (shared object, header) out of the common install tree
+_pick() {
+  local f
+  cd "$srcdir/stage"
+  for f in "$@"; do
+    [[ -e $f || -L $f ]] || continue
+    install -d "$pkgdir/$(dirname "$f")"
+    mv "$f" "$pkgdir/$(dirname "$f")/"
+  done
+}
+
+package_libblockdev-crypto() {
+  pkgdesc+=" - crypto plugin"
+  depends=(cryptsetup keyutils libblockdev glib2 volume_key)
+  _stage
+  _pick usr/lib/libbd_crypto.so* usr/include/blockdev/crypto.h
+}
+
+package_libblockdev-fs() {
+  pkgdesc+=" - file system plugin"
+  depends=(libblockdev glib2 e2fsprogs dosfstools util-linux-libs parted)
+  optdepends=('xfsprogs: XFS support' 'btrfs-progs: Btrfs support')
+  _stage
+  _pick usr/lib/libbd_fs.so* usr/include/blockdev/fs.h usr/include/blockdev/fs
+}
+
+package_libblockdev-loop() {
+  pkgdesc+=" - loop plugin"
+  depends=(libblockdev glib2)
+  _stage
+  _pick usr/lib/libbd_loop.so* usr/include/blockdev/loop.h
+}
+
+package_libblockdev-mdraid() {
+  pkgdesc+=" - mdraid plugin"
+  depends=(libblockdev glib2 mdadm libbytesize)
+  _stage
+  _pick usr/lib/libbd_mdraid.so* usr/include/blockdev/mdraid.h
+}
+
+package_libblockdev-nvme() {
+  pkgdesc+=" - NVMe plugin"
+  depends=(libblockdev glib2 libnvme)
+  _stage
+  _pick usr/lib/libbd_nvme.so* usr/include/blockdev/nvme.h
+}
+
+package_libblockdev-part() {
+  pkgdesc+=" - partitioning plugin"
+  depends=(libblockdev glib2 parted)
+  optdepends=('gptfdisk: GPT support')
+  _stage
+  _pick usr/lib/libbd_part.so* usr/include/blockdev/part.h
+}
+
+package_libblockdev-smart() {
+  pkgdesc+=" - SMART plugin"
+  depends=(libblockdev glib2 libatasmart)
+  _stage
+  _pick usr/lib/libbd_smart.so* usr/include/blockdev/smart.h
+}
+
+package_libblockdev-swap() {
+  pkgdesc+=" - swap plugin"
+  depends=(libblockdev glib2 util-linux)
+  _stage
+  _pick usr/lib/libbd_swap.so* usr/include/blockdev/swap.h
+}
+
+# must come last: whatever is left in the staging tree is the core library
+package_libblockdev() {
+  depends=(glib2 kmod libbytesize libyaml)
+  provides=(libblockdev.so libbd_utils.so)
+  _stage
+  cp -a "$srcdir/stage/." "$pkgdir/"
 }

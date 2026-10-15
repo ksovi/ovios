@@ -1,174 +1,161 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
-# Based on the Arch Linux package; original contributors credited below
-# Contributor: Thomas Bächler <thomas@archlinux.org>
+# Based on the Arch Linux package layout
 
 pkgbase=linux-firmware
-pkgname=(linux-firmware-whence linux-firmware amd-ucode
-         linux-firmware-{nfp,mellanox,marvell,qcom,liquidio,qlogic,bnx2x}
+pkgname=(
+  linux-firmware-amdgpu
+  linux-firmware-atheros
+  linux-firmware-broadcom
+  linux-firmware-cirrus
+  linux-firmware-intel
+  linux-firmware-liquidio
+  linux-firmware-marvell
+  linux-firmware-mediatek
+  linux-firmware-mellanox
+  linux-firmware-nfp
+  linux-firmware-nvidia
+  linux-firmware-qcom
+  linux-firmware-qlogic
+  linux-firmware-radeon
+  linux-firmware-realtek
+  linux-firmware-whence
+  linux-firmware-other
 )
-_tag=20230404
 pkgver=20260916
 pkgrel=1
 pkgdesc="Firmware files for Linux"
 url="https://git.kernel.org/?p=linux/kernel/git/firmware/linux-firmware.git;a=summary"
-license=('GPL2' 'GPL3' 'custom')
+license=('GPL-2.0-only' 'GPL-3.0-or-later' 'LicenseRef-linux-firmware')
 arch=('any')
-makedepends=('git')
-options=(!strip)
-source=("git+https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git#tag=${_tag}?signed"
-         0001-Add-support-for-compressing-firmware-in-copy-firmware.patch)
-sha256sums=('SKIP' 'aa11b2eed9c0be42571b45eb7153908a43290f02a5fc715aefcaa81030a1832f')
-
-validpgpkeys=('4CDE8575E547BF835FE15807A31B6BD72486CFD6') # Josh Boyer <jwboyer@fedoraproject.org>
-
-_backports=(
-)
-
-prepare() {
-  cd ${pkgbase}
-
-  local _c
-  for _c in "${_backports[@]}"; do
-    git log --oneline -1 "${_c}"
-    git cherry-pick -n "${_c}"
-  done
-
-  # add firmware compression support - patch taken from Fedora
-  patch -Np1 -i ../0001-Add-support-for-compressing-firmware-in-copy-firmware.patch
-}
-
-pkgver() {
-  cd ${pkgbase}
-
-  # Commit date + short rev
-  echo $(TZ=UTC git show -s --pretty=%cd --date=format-local:%Y%m%d HEAD).$(git rev-parse --short HEAD)
-}
+makedepends=('zstd' 'rdfind')
+options=(!strip !debug)
+source=("https://cdn.kernel.org/pub/linux/kernel/firmware/${pkgbase}-${pkgver}.tar.xz")
+sha256sums=('SKIP')
 
 build() {
-  mkdir -p kernel/x86/microcode
-  cat ${pkgbase}/amd-ucode/microcode_amd*.bin > kernel/x86/microcode/AuthenticAMD.bin
-
-  # Reproducibility: set the timestamp on the bin file
-  if [[ -n ${SOURCE_DATE_EPOCH} ]]; then
-    touch -d @${SOURCE_DATE_EPOCH} kernel/x86/microcode/AuthenticAMD.bin
-  fi
-
-  # Reproducibility: strip the inode and device numbers from the cpio archive
-  echo kernel/x86/microcode/AuthenticAMD.bin |
-    bsdtar --uid 0 --gid 0 -cnf - -T - |
-    bsdtar --null -cf - --format=newc @- > amd-ucode.img
+  cd ${pkgbase}-${pkgver}
+  # install everything once, zstd-compressed and de-duplicated, into a staging tree;
+  # every package below picks its own part of it
+  make DESTDIR="$srcdir/stage" FIRMWAREDIR=/usr/lib/firmware install-zst
 }
 
-_pick() {
-  local p="$1" f d; shift
-  for f; do
-    d="$srcdir/$p/${f#$pkgdir/}"
-    mkdir -p "$(dirname "$d")"
-    mv "$f" "$d"
-    rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"
+# move paths/globs (relative to /usr/lib/firmware) from the staging tree into $pkgdir
+_pick_fw() {
+  local f g
+  cd "$srcdir/stage/usr/lib/firmware"
+  install -d "$pkgdir/usr/lib/firmware"
+  for f in "$@"; do
+    for g in $f; do
+      [[ -e $g || -L $g ]] || continue
+      install -d "$pkgdir/usr/lib/firmware/$(dirname "$g")"
+      mv "$g" "$pkgdir/usr/lib/firmware/$(dirname "$g")/"
+    done
   done
 }
 
 package_linux-firmware-whence() {
-  pkgdesc+=" - contains the WHENCE license file which documents the vendor license details"
-
-  install -Dt "${pkgdir}/usr/share/licenses/${pkgname}" -m644 ${pkgbase}/WHENCE
+  pkgdesc="Firmware files for Linux - Contains the WHENCE license file which documents the vendor license details"
+  license=('LicenseRef-linux-firmware')
+  install -Dm644 "$srcdir/${pkgbase}-${pkgver}/WHENCE" "$pkgdir/usr/share/licenses/$pkgname/WHENCE"
+  for f in "$srcdir/${pkgbase}-${pkgver}"/LICEN[CS]E.*; do
+    install -Dm644 "$f" "$pkgdir/usr/share/licenses/$pkgname/$(basename "$f")"
+  done
 }
 
-package_linux-firmware() {
-  depends=('linux-firmware-whence')
-
-  cd ${pkgbase}
-
-  make DESTDIR="${pkgdir}" FIRMWAREDIR=/usr/lib/firmware installcompress
-
-  # Trigger a microcode reload for configurations not using early updates
-  echo 'w /sys/devices/system/cpu/microcode/reload - - - - 1' |
-    install -Dm644 /dev/stdin "${pkgdir}/usr/lib/tmpfiles.d/${pkgname}.conf"
-
-  install -Dt "${pkgdir}/usr/share/licenses/${pkgname}" -m644 LICEN*
-
-  # split
-  cd "${pkgdir}"
-
-  _pick linux-firmware-nfp usr/lib/firmware/netronome
-  _pick linux-firmware-nfp usr/share/licenses/${pkgname}/LICENCE.Netronome
-
-  _pick linux-firmware-mellanox usr/lib/firmware/mellanox
-
-  _pick linux-firmware-marvell usr/lib/firmware/{libertas,mwl8k,mwlwifi,mrvl}
-  _pick linux-firmware-marvell usr/share/licenses/${pkgname}/LICENCE.{Marvell,NXP}
-
-  _pick linux-firmware-qcom usr/lib/firmware/{qcom,a300_*}
-  _pick linux-firmware-qcom usr/share/licenses/${pkgname}/LICENSE.qcom*
-
-  _pick linux-firmware-liquidio usr/lib/firmware/liquidio
-  _pick linux-firmware-liquidio usr/share/licenses/${pkgname}/LICENCE.cavium_liquidio
-
-  _pick linux-firmware-qlogic usr/lib/firmware/{qlogic,qed,ql2???_*,c{b,t,t2}fw-*}
-  _pick linux-firmware-qlogic usr/share/licenses/${pkgname}/LICENCE.{qla1280,qla2xxx}
-
-  _pick linux-firmware-bnx2x usr/lib/firmware/bnx2x*
+package_linux-firmware-amdgpu() {
+  pkgdesc="Firmware files for Linux - Firmware for AMD GPUs"
+  depends=(linux-firmware-whence)
+  _pick_fw amdgpu amdnpu amdtee amdxdna
 }
 
-package_amd-ucode() {
-  pkgdesc="Microcode update image for AMD CPUs"
-  license=(custom)
-
-  install -Dt "${pkgdir}/boot" -m644 amd-ucode.img
-
-  install -Dt "${pkgdir}/usr/share/licenses/${pkgname}" -m644 ${pkgbase}/LICENSE.amd-ucode
+package_linux-firmware-atheros() {
+  pkgdesc="Firmware files for Linux - Firmware for Qualcomm Atheros WiFi/Bluetooth adapters"
+  depends=(linux-firmware-whence)
+  _pick_fw 'ath*' qca htc_7010.fw htc_9271.fw
 }
 
-package_linux-firmware-nfp() {
-  pkgdesc+=" - nfp / Firmware for Netronome Flow Processors"
-  depends=('linux-firmware-whence')
-
-  mv -v linux-firmware-nfp/* "${pkgdir}"
+package_linux-firmware-broadcom() {
+  pkgdesc="Firmware files for Linux - Firmware for Broadcom NICs/WiFi/Bluetooth"
+  depends=(linux-firmware-whence)
+  _pick_fw brcm bnx2 bnx2x 'bcm*' cypress
 }
 
-package_linux-firmware-mellanox() {
-  pkgdesc+=" - mellanox / Firmware for Mellanox Spectrum switches"
-  depends=('linux-firmware-whence')
-
-  mv -v linux-firmware-mellanox/* "${pkgdir}"
+package_linux-firmware-cirrus() {
+  pkgdesc="Firmware files for Linux - Firmware for Cirrus Logic audio codecs"
+  depends=(linux-firmware-whence)
+  _pick_fw cirrus cs35l56 cs42l43
 }
 
-package_linux-firmware-marvell() {
-  pkgdesc+=" - marvell / Firmware for Marvell devices"
-  depends=('linux-firmware-whence')
-  
-  mv -v linux-firmware-marvell/* "${pkgdir}"
-  # remove arm64 firmware #76583
-  rm "${pkgdir}"/usr/lib/firmware/mrvl/prestera/mvsw_prestera_fw_arm64-v4.1.img.xz
-}
-
-package_linux-firmware-qcom() {
-  pkgdesc+=" - qcom / Firmware for Qualcomm SoCs"
-  depends=('linux-firmware-whence')
-
-  mv -v linux-firmware-qcom/* "${pkgdir}"
+package_linux-firmware-intel() {
+  pkgdesc="Firmware files for Linux - Firmware for Intel GPUs, WiFi, Bluetooth and NICs"
+  depends=(linux-firmware-whence)
+  _pick_fw i915 xe intel 'iwlwifi-*' 'ibt-*' ice e100 ipu3-fw.bin ti-connectivity ene-ub6250
 }
 
 package_linux-firmware-liquidio() {
-  pkgdesc+=" - liquidio / Firmware for Cavium LiquidIO server adapters"
-  depends=('linux-firmware-whence')
+  pkgdesc="Firmware files for Linux - Firmware for Cavium LiquidIO NICs"
+  depends=(linux-firmware-whence)
+  _pick_fw liquidio
+}
 
-  mv -v linux-firmware-liquidio/* "${pkgdir}"
+package_linux-firmware-marvell() {
+  pkgdesc="Firmware files for Linux - Firmware for Marvell devices"
+  depends=(linux-firmware-whence)
+  _pick_fw mrvl mwl8k mwlwifi libertas
+}
+
+package_linux-firmware-mediatek() {
+  pkgdesc="Firmware files for Linux - Firmware for MediaTek devices"
+  depends=(linux-firmware-whence)
+  _pick_fw mediatek 'mt7*' 'MT7*'
+}
+
+package_linux-firmware-mellanox() {
+  pkgdesc="Firmware files for Linux - Firmware for Mellanox Spectrum switches"
+  depends=(linux-firmware-whence)
+  _pick_fw mellanox
+}
+
+package_linux-firmware-nfp() {
+  pkgdesc="Firmware files for Linux - Firmware for Netronome Flow Processors"
+  depends=(linux-firmware-whence)
+  _pick_fw netronome
+}
+
+package_linux-firmware-nvidia() {
+  pkgdesc="Firmware files for Linux - Firmware for NVIDIA GPUs and SoCs"
+  depends=(linux-firmware-whence)
+  _pick_fw nvidia
+}
+
+package_linux-firmware-qcom() {
+  pkgdesc="Firmware files for Linux - Firmware for Qualcomm SoCs"
+  depends=(linux-firmware-whence)
+  _pick_fw qcom 'qca*' a300_pfp.fw a300_pm4.fw
 }
 
 package_linux-firmware-qlogic() {
-  pkgdesc+=" - qlogic / Firmware for QLogic devices"
-  depends=('linux-firmware-whence')
-
-  mv -v linux-firmware-qlogic/* "${pkgdir}"
+  pkgdesc="Firmware files for Linux - Firmware for QLogic devices"
+  depends=(linux-firmware-whence)
+  _pick_fw qlogic 'ql2*' qed
 }
 
-package_linux-firmware-bnx2x() {
-  pkgdesc+=" - bnx2x / Firmware for Broadcom NetXtreme II 10Gb ethernet adapters"
-  depends=('linux-firmware-whence')
-
-  mv -v linux-firmware-bnx2x/* "${pkgdir}"
+package_linux-firmware-radeon() {
+  pkgdesc="Firmware files for Linux - Firmware for AMD Radeon GPUs"
+  depends=(linux-firmware-whence)
+  _pick_fw radeon
 }
 
-# vim:set sw=2 et:
+package_linux-firmware-realtek() {
+  pkgdesc="Firmware files for Linux - Firmware for Realtek devices"
+  depends=(linux-firmware-whence)
+  _pick_fw rtl_bt rtl_nic rtlwifi rtw88 rtw89 'rtl*' 'rtw*'
+}
+
+# must come last: everything not claimed above
+package_linux-firmware-other() {
+  pkgdesc="Firmware files for Linux - Unsorted firmware for various devices"
+  depends=(linux-firmware-whence)
+  install -d "$pkgdir/usr/lib/firmware"
+  cp -a "$srcdir/stage/usr/lib/firmware/." "$pkgdir/usr/lib/firmware/"
+}
