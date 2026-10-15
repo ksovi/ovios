@@ -1,24 +1,33 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor:
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+
 pkgname=gawk
-pkgver=5.1.1
+pkgver=5.4.1
 pkgrel=1
-pkgdesc="The Gawk package contains programs for manipulating text files." 
-arch=(i686 x86_64) 
+pkgdesc="GNU version of awk"
+arch=('x86_64')
+url="https://www.gnu.org/software/gawk/"
+license=('GPL')
+depends=('sh' 'glibc' 'mpfr')
+provides=('awk')
+source=(https://ftp.gnu.org/pub/gnu/${pkgname}/${pkgname}-${pkgver}.tar.gz{,.sig})
+validpgpkeys=('D1967C63788713177D861ED7DF597815937EC0D2') # Arnold Robbins
+sha256sums=('SKIP' 'SKIP')
 
-groups=(ovios)
-
-source=($pkgname-$pkgver.tar.xz)
-
-build() { 
-    cd "$srcdir/$pkgname-$pkgver"
-	sed -i 's/extras//' Makefile.in
-	./configure --prefix=/usr
-	make
+build() {
+  cd ${pkgname}-${pkgver}
+  ./configure --prefix=/usr --libexecdir=/usr/lib --sysconfdir=/etc --without-libsigsegv
+  make
 }
 
-package() { 
-    cd "$srcdir/$pkgname-$pkgver"
-	make DESTDIR=${pkgdir} install
-	mkdir -pv  ${pkgdir}/usr/share/doc/gawk-${pkgver}
-	cp -v doc/{awkforai.txt,*.{eps,pdf,jpg}} ${pkgdir}/usr/share/doc/gawk-${pkgver}
+check() {
+  cd ${pkgname}-${pkgver}
+  make check
+}
+
+package() {
+  cd ${pkgname}-${pkgver}
+  make DESTDIR="${pkgdir}" install
 }

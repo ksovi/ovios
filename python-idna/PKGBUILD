@@ -1,26 +1,32 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Felix Yan <felixonmars@archlinux.org>
+
 pkgname=python-idna
-pkgver=3.3
-pkgrel=4
+pkgver=3.20
+pkgrel=1
 pkgdesc="Internationalized Domain Names in Applications (IDNA)"
 arch=('any')
 license=('BSD')
 url="https://github.com/kjd/idna"
-
+depends=('python')
+makedepends=('python-build' 'python-installer' 'python-flit-core')
+checkdepends=('python-pytest')
 source=("https://pypi.io/packages/source/i/idna/idna-$pkgver.tar.gz")
-
-
-prepare() {
-   rm -r idna-$pkgver/*.egg-info
-}
+sha512sums=('SKIP')
 
 build() {
    cd idna-$pkgver
-   python setup.py build
+   python -m build --no-isolation --wheel
 }
- 
+
+check() {
+   cd idna-$pkgver
+   pytest
+}
+
 package() {
    cd idna-$pkgver
-   python setup.py install --root="$pkgdir" --optimize=1 --skip-build
+   python -m installer --destdir="$pkgdir" dist/*.whl
    install -Dm644 LICENSE.md -t "$pkgdir"/usr/share/licenses/$pkgname/
 }

@@ -1,23 +1,44 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Dan McGee <dan@archlinux.org>
+
 pkgname=libarchive
-pkgver=3.6.0
+pkgver=3.8.9
 pkgrel=1
-arch=(i686 x86_64) 
+pkgdesc='Multi-format archive and compression library'
+arch=('x86_64')
+url='https://libarchive.org/'
+license=('BSD')
+depends=('acl' 'libacl.so' 'bzip2' 'expat' 'lz4' 'openssl' 'libcrypto.so' 'xz'
+         'zlib' 'zstd')
+provides=('libarchive.so')
+validpgpkeys=('A5A45B12AD92D964B89EEE2DEC560C81CEC2276E'  # Martin Matuska <mm@FreeBSD.org>
+              'DB2C7CF1B4C265FAEF56E3FC5848A18B8F14184B') # Martin Matuska <martin@matuska.org>
+source=("https://github.com/${pkgname}/${pkgname}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.xz"{,.asc})
+sha256sums=('SKIP' 'SKIP')
 
-groups=(ovios)
+build() {
+  cd "${pkgname}-${pkgver}"
 
-source=($pkgname-$pkgver.tar.gz)
-
-build() { 
-    cd "$srcdir/$pkgname-$pkgver"
-	sed -i '436a if ((OSSL_PROVIDER_load(NULL, "legacy")) == NULL) \
-      return (ARCHIVE_FAILED);' libarchive/archive_digest.c
-	./configure --prefix=/usr --disable-static
-	make
+  ./configure \
+      --prefix=/usr \
+      --without-xml2 \
+      --without-nettle \
+      --disable-static
+  make
 }
 
-package() { 
-    cd "$srcdir/$pkgname-$pkgver"
-	make DESTDIR=${pkgdir} install
+check() {
+  cd "${pkgname}-${pkgver}"
+
+  make check
 }
 
+package() {
+  cd "${pkgname}-${pkgver}"
+
+  make DESTDIR="$pkgdir" install
+  sed -i "s/iconv //" "$pkgdir"/usr/lib/pkgconfig/libarchive.pc
+  install -Dm0644 COPYING "$pkgdir/usr/share/licenses/libarchive/COPYING"
+}

@@ -1,0 +1,71 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: David Runge <dvzrv@archlinux.org>
+# Contributor: Ionut Biru <ibiru@archlinux.org>
+# Contributor: Gerardo Exequiel Pozzi <vmlinuz386@yahoo.com.ar>
+
+pkgbase=libcap-ng
+pkgname=(libcap-ng python-capng)
+pkgver=0.9.6
+pkgrel=1
+pkgdesc='A library for Linux that makes using posix capabilities easy'
+arch=(x86_64)
+url='https://people.redhat.com/sgrubb/libcap-ng/'
+license=(LGPL2.1)
+depends=(glibc)
+makedepends=(python swig)
+source=(https://github.com/stevegrubb/libcap-ng/archive/v${pkgver}/${pkgname}-${pkgver}.tar.gz)
+sha512sums=('SKIP')
+
+b2sums=('SKIP')
+
+_pick() {
+  local p="$1" f d; shift
+  for f; do
+    d="$srcdir/$p/${f#$pkgdir/}"
+    mkdir -p "$(dirname "$d")"
+    mv "$f" "$d"
+    rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"
+  done
+}
+
+prepare() {
+  cd $pkgbase-$pkgver
+  autoreconf -fiv
+}
+
+build() {
+  cd $pkgbase-$pkgver
+  ./configure \
+    --prefix=/usr \
+    --enable-static=no \
+    --without-python \
+    --with-python3
+  make
+}
+
+check() {
+  make check -C $pkgbase-$pkgver
+}
+
+package_libcap-ng() {
+  provides=(libcap-ng.so libdrop_ambient.so)
+
+  make DESTDIR="$pkgdir" install -C $pkgbase-$pkgver
+
+  (
+    cd "$pkgdir"
+    _pick python-capng usr/lib/python*
+  )
+}
+
+package_python-capng() {
+  pkgdesc+=' (Python bindings)'
+  depends+=(libcap-ng.so)
+  provides=(python-libcap-ng)
+
+  mv -v python-capng/* "$pkgdir"
+}
+
+# vim: ts=2 sw=2 et:

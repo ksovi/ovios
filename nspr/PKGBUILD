@@ -1,25 +1,48 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: Alexander Baldeck <alexander@archlinux.org>
+
 pkgname=nspr
-pkgver=4.33
+pkgver=4.40
 pkgrel=1
-pkgdesc="Netscape Portable Runtime (NSPR) provides a platform-neutral API for system level and libc like functions."
-arch=('i686' 'x86_64')
-groups=(ovios)
-source=(https://archive.mozilla.org/pub/nspr/releases/v${pkgver}/src/nspr-${pkgver}.tar.gz)
+pkgdesc="Netscape Portable Runtime"
+url="https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSPR"
+arch=(x86_64)
+license=(MPL GPL)
+depends=(glibc sh)
+makedepends=(zip mercurial)
+_tag=NSPR_${pkgver//./_}_RTM
+source=("hg+https://hg.mozilla.org/projects/nspr#tag=$_tag")
+sha256sums=('SKIP')
+
+prepare() {
+  cd nspr
+}
 
 build() {
-	 cd ${pkgname}-${pkgver}/nspr
-	 sed -ri '/^RELEASE/s/^/#/' pr/src/misc/Makefile.in
-	sed -i 's#$(LIBRARY) ##'   config/rules.mk
-
-	./configure --prefix=/usr \
-            --with-mozilla \
-            --with-pthreads \
-            $([ $(uname -m) = x86_64 ] && echo --enable-64bit)
-	make
+  cd nspr
+  ./configure \
+      --prefix=/usr \
+      --libdir=/usr/lib \
+      --includedir=/usr/include/nspr \
+      --enable-optimize \
+      --disable-debug \
+      --enable-64bit
+  make ${SOURCE_DATE_EPOCH:+
+    SH_NOW="${SOURCE_DATE_EPOCH}000000"
+    SH_DATE="$(date --utc --date="@$SOURCE_DATE_EPOCH" '+%Y-%m-%d %T')"
+  }
 }
 
 package() {
-	 cd ${pkgname}-${pkgver}/nspr
-	 make DESTDIR=${pkgdir} install
+  cd nspr
+  make DESTDIR="$pkgdir" install
+  ln -s nspr.pc "$pkgdir/usr/lib/pkgconfig/mozilla-nspr.pc"
+
+  rm -r "$pkgdir"/usr/include/nspr/md
+  rm "$pkgdir"/usr/bin/{compile-et.pl,prerr.properties}
 }
+
+# vim:set sw=2 et:

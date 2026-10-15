@@ -1,21 +1,35 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+
 pkgname=libpipeline
-pkgver=1.5.5
+pkgver=1.5.8
 pkgrel=1
-pkgdesc="A library for manipulating pipelines of subprocesses in a flexible and convenient way." 
-arch=(i686 x86_64) 
+pkgdesc="a C library for manipulating pipelines of subprocesses in a flexible and convenient way"
+arch=('x86_64')
+url="https://nongnu.org/libpipeline/"
+license=('GPL')
+depends=('glibc')
+# https://gitlab.com/cjwatson/libpipeline
+source=(https://download.savannah.gnu.org/releases/libpipeline/$pkgname-$pkgver.tar.gz{,.asc})
+sha256sums=('SKIP' 'SKIP')
 
-groups=(ovios)
+#validpgpkeys=('AC0A4FF12611B6FCCF01C111393587D97D86500B') # Colin Watson <cjwatson@debian.org>
+#validpgpkeys=('87317259431038049C92C139F6DD330210FA4CD1') # "Colin Watson <cjwatson@flatline.org.uk>"
+validpgpkeys=('AC0A4FF12611B6FCCF01C111393587D97D86500B') # "Colin Watson <cjwatson@chiark.greenend.org.uk>"
 
-source=($pkgname-$pkgver.tar.gz)
-
-build() { 
-    cd "$srcdir/$pkgname-$pkgver"
-	./configure --prefix=/usr
-	make
+build() {
+  cd $pkgname-$pkgver
+  ./configure --prefix=/usr
+  make
 }
 
-package() { 
-    cd "$srcdir/$pkgname-$pkgver"
-	make DESTDIR=${pkgdir} install
+check() {
+  cd $pkgname-$pkgver
+  make check
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir/" install
 }

@@ -1,19 +1,36 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Giovanni Scafora <giovanni@archlinux.org>
+# Contributor: Aaron Griffin <aaron@archlinux.org>
+
 pkgname=parted
-pkgver=3.4
+pkgver=3.8
 pkgrel=1
-arch=(x86_64)
-source=(ftp://ftp.gnu.org/gnu/parted/parted-${pkgver}.tar.xz)
-groups=(ovios)
+pkgdesc='A program for creating, destroying, resizing, checking and copying partitions'
+arch=('x86_64')
+license=('GPL3')
+url='https://www.gnu.org/software/parted/parted.html'
+depends=('device-mapper' 'util-linux-libs')
+makedepends=('pkg-config')
+validpgpkeys=('1B49F933916A37A3F45A1812015F4DD4A70FB705'  # Phillip Susi <psusi@ubuntu.com>
+              'B4C6B451E4FA8B4232CA191E117E8C168EFE3A7F') # Brian C. Lane <bcl@redhat.com>
+source=("https://ftp.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}.tar.xz"{,.sig})
+sha256sums=('SKIP' 'SKIP')
 
 build() {
-cd $pkgname-$pkgver
-./configure --prefix=/usr \
-        --disable-static
-make
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  # Do *not* add --disable-debug, it prevents building fatresize
+  # https://github.com/ya-mouse/fatresize/issues/9
+  ./configure \
+    --prefix=/usr \
+    --sbindir=/usr/bin \
+    --disable-rpath
+  make
 }
 
 package() {
-cd $pkgname-$pkgver
-make DESTDIR=${pkgdir} install
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" install
 }

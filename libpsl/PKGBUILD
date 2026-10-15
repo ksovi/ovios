@@ -1,0 +1,54 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: Darshit Shah <darnir@gmail.com>
+
+pkgname=libpsl
+pkgver=0.21.5
+pkgrel=2
+pkgdesc='Public Suffix List library'
+url='https://github.com/rockdaboot/libpsl'
+arch=('x86_64')
+license=('MIT')
+depends=('libidn2' 'libunistring')
+makedepends=('libxslt' 'python' 'publicsuffix-list' 'gtk-doc')
+provides=('libpsl.so')
+source=(https://github.com/rockdaboot/libpsl/releases/download/${pkgver}/${pkgname}-${pkgver}.tar.gz)
+sha512sums=('SKIP')
+
+b2sums=('SKIP')
+
+prepare() {
+  cd ${pkgname}-${pkgver}
+  rm -frv list
+  autoreconf -fiv
+}
+
+build() {
+  cd ${pkgname}-${pkgver}
+  ./configure \
+    --prefix=/usr \
+    --disable-static \
+    --disable-dependency-tracking \
+    --enable-man \
+    --enable-gtk-doc \
+    --enable-{builtin,runtime}=libidn2 \
+    --with-psl-file=/usr/share/publicsuffix/effective_tld_names.dat \
+    --with-psl-testfile=/usr/share/publicsuffix/test_psl.txt
+  LC_CTYPE=en_US.UTF-8 make
+}
+
+check() {
+  cd ${pkgname}-${pkgver}
+  make check
+}
+
+package() {
+  depends+=('libidn2.so' 'libunistring.so')
+
+  cd ${pkgname}-${pkgver}
+  make DESTDIR="${pkgdir}" install
+  install -Dm 644 COPYING -t "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
+# vim: ts=2 sw=2 et:

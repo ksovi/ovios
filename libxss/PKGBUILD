@@ -1,0 +1,33 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: Alexander Baldeck <alexander@archlinux.org>
+
+pkgname=libxss
+pkgver=1.2.5
+pkgrel=1
+pkgdesc="X11 Screen Saver extension library"
+arch=('x86_64')
+license=('custom')
+url="https://gitlab.freedesktop.org/xorg/lib/libxscrnsaver"
+depends=('libxext')
+makedepends=('xorg-util-macros' 'xorgproto')
+source=("https://xorg.freedesktop.org/releases/individual/lib/libXScrnSaver-${pkgver}.tar.bz2"
+       # "${url}/-/archive/libXScrnSaver-${pkgver}/libxscrnsaver-libXScrnSaver-${pkgver}.tar.bz2"
+)
+#https://gitlab.freedesktop.org/xorg/lib/libxscrnsaver/-/archive/libXScrnSaver-1.2.3/libxscrnsaver-libXScrnSaver-1.2.3.tar.bz2
+sha512sums=('SKIP')
+
+build() {
+  cd libXScrnSaver-${pkgver}
+  ./configure --prefix=/usr --sysconfdir=/etc
+  make
+}
+
+package() {
+  cd libXScrnSaver-${pkgver}
+  make DESTDIR="${pkgdir}" install
+
+  install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+  install -m644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/"
+}

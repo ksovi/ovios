@@ -1,25 +1,52 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: David Runge <dvzrv@archlinux.org>
+# Contributor: Antonio Rojas <arojas@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: damir <damir@archlinux.org>
+
 pkgname=mpfr
-pkgver=4.1.0
+_pkgver=4.2.0
+_patchver=7
 pkgrel=1
-pkgdesc="The MPFR package contains functions for multiple precision math"
+pkgver=4.2.2
+#pkgver=$_pkgver
+pkgdesc='Multiple-precision floating-point library'
+arch=(x86_64)
+url='https://www.mpfr.org/'
+license=(GPL3 LGPL3)
+depends=(glibc gmp)
+source=(https://ftp.gnu.org/gnu/mpfr/mpfr-${_pkgver}.tar.xz{,.sig}
+        patches.diff) # wget https://www.mpfr.org/mpfr-${_pkgver}/allpatches -O patches.diff
+sha512sums=('SKIP' 'SKIP' '12cb553946b372da762b919a523a0dbb5c7b9f7931fd018013fb8e2a51b43d6ef421dda9c5ff6d89d7f75376d67f33205e7bcc3c69ef1aeaad5b3539218ec349')
 
-arch=('any') 
-groups=(ovios) 
-source=(${pkgname}-${pkgver}.tar.xz)
+b2sums=('SKIP' 'SKIP' 'bbe00cff15d382663db623e1ef834e44192df1ad22c436d5b870fcf8bf438bd618d8ae332fe7ac4c0fd1d638e0764ab84a81954b91d54e0337ccad3568a3a83b')
 
-build() { 
-	cd $srcdir/$pkgname-$pkgver
-	./configure --prefix=/usr    \
-            --disable-static \
-            --docdir=/usr/share/doc/mpfr-${pkgver}
-	make
-	make html
-} 
- 
-package() { 
-  cd $srcdir/$pkgname-$pkgver
-  
-  make DESTDIR=$pkgdir install
-  make DESTDIR=$pkgdir install-html
+validpgpkeys=('07F3DBBECC1A39605078094D980C197698C3739D'
+              'A534BE3F83E241D918280AEB5831D11A0D4DB02A') # Vincent Lefevre <vincent@vinc17.net>
+
+prepare() {
+  cd $pkgname-${_pkgver}
+
+  patch -p1 -i ../patches.diff
+  autoreconf -fiv
+}
+
+build() {
+  cd $pkgname-${_pkgver}
+  ./configure --prefix=/usr \
+    --enable-thread-safe \
+    --enable-shared
+  make
+}
+
+check() {
+  cd $pkgname-${_pkgver}
+  make check
+  make check-exported-symbols
+}
+
+package() {
+  cd $pkgname-${_pkgver}
+  make DESTDIR="$pkgdir" install
 }

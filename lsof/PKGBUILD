@@ -1,22 +1,45 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: Tom Gundersen <teg@jklm.no>
+# Contributor: Angel Velasquez <angvp@archlinux.org>
+# Contributor: Daniel J Griffiths <ghost1227@archlinux.us>
+# Contributor: Aaron Griffin <aaron@archlinux.org>
+# Contributor: Jochem Kossen <j.kossen@home.nl>
+# Contributor: Hendrik Meyer <archlinux@t4cc0.re>
+
 pkgname=lsof
-pkgver=4.94.0
+pkgver=4.99.7
 pkgrel=1
-arch=(any)
-pkgdesc="The lsof package is useful to LiSt Open Files for a given running application or process"
-source=(https://github.com/lsof-org/lsof/releases/download/${pkgver}/lsof_${pkgver}.linux.tar.bz2)
-groups=('ovios')
+pkgdesc='Lists open files for running Unix processes'
+url='https://github.com/lsof-org/lsof'
+arch=('x86_64')
+license=('custom')
+depends=('glibc' 'libtirpc')
+source=(https://github.com/lsof-org/lsof/archive/${pkgver}/${pkgname}-${pkgver}.tar.gz
+        license.txt)
+sha512sums=('SKIP' '3bdbc8f213e9bdba946636498d21486e2b79d8ae44a45b284b4dff8875e76f992ab0977e3ed510525a8f74203028acb6b15315fda963666012874be4ce4fdd93')
+
+prepare() {
+  cd lsof-${pkgver}
+
+  sed -i 's|/\* #define\tHASSECURITY\t1 \*/|#define\tHASSECURITY\t1|' dialects/linux/machine.h
+  sed -i "s|.so ./version|.ds VN ${pkgver}|" -i Lsof.8
+}
 
 build() {
-	cd ${srcdir}/lsof_$pkgver.linux
-	./Configure -n linux 
-	make CFGL="-L./lib -ltirpc"  
+  cd lsof-${pkgver}
+  ./Configure -n linux
+  make CC="cc ${CFLAGS} ${CPPFLAGS} ${LDFLAGS}"
 }
 
 package() {
-	cd ${srcdir}/lsof_${pkgver}.linux  
-	mkdir -p ${pkgdir}/usr/bin
-	mkdir -p ${pkgdir}/usr/share/man/man8  
-	install -v -m0755 -o root -g root lsof ${pkgdir}/usr/bin/  
-	install -v lsof.8 ${pkgdir}/usr/share/man/man8/
+  cd lsof-${pkgver}
+
+  install -Dm 755 lsof -t "${pkgdir}"/usr/bin
+  install -Dm 644 Lsof.8 "${pkgdir}"/usr/share/man/man8/lsof.8
+  install -Dm 644 "${srcdir}"/license.txt \
+       "${pkgdir}"/usr/share/licenses/lsof/LICENSE
 }
+
+# vim: ts=2 sw=2 et:

@@ -1,20 +1,27 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
-pkgname=sg3_utils
-pkgver=1.47
-pkgrel=1
-groups=(ovios)
-pkgdesc='The sg3_utils package contains low level utilities for devices that use a SCSI command set.'
-arch=('x86_64')
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Daniel Isenmann <daniel@archlinux.org>
 
-source=(https://sg.danny.cz/sg/p/sg3_utils-${pkgver}.tar.xz)
+pkgname=sg3_utils
+pkgver=1.49
+pkgrel=1
+pkgdesc="Generic SCSI utilities"
+arch=(x86_64)
+url="http://sg.danny.cz/sg/sg3_utils.html"
+license=('GPL' 'custom:BSD')
+depends=('glibc')
+source=(http://sg.danny.cz/sg/p/${pkgname}-${pkgver}.tar.xz)
+sha512sums=('SKIP')
 
 build() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
-  ./configure --prefix=/usr --disable-static
+  cd ${pkgname}-${pkgver}
+  ./configure --prefix=/usr
   make
 }
 
 package() {
-  cd "${srcdir}/${pkgname}-${pkgver}"
-  make DESTDIR="$pkgdir" install
+  cd ${pkgname}-${pkgver}
+  make DESTDIR="${pkgdir}" install
+  install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+  install -m644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/"
 }

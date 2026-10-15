@@ -1,0 +1,35 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Felix Yan <felixonmars@gmail.com>
+# Contributor: Kevin Piche <kevin@archlinux.org>
+# Contributor: Manolis Tzanidakis
+
+pkgname=perl-timedate
+pkgver=2.35
+pkgrel=1
+pkgdesc="Date formating subroutines"
+arch=('any')
+license=('PerlArtistic')
+url="https://search.cpan.org/dist/TimeDate/"
+depends=('perl')
+replaces=('timedate')
+provides=('timedate')
+options=('!emptydirs')
+source=("https://www.cpan.org/authors/id/A/AT/ATOOMIC/TimeDate-$pkgver.tar.gz")
+sha512sums=('SKIP')
+
+build() {
+  cd TimeDate-$pkgver
+  perl Makefile.PL INSTALLDIRS=vendor
+  make
+}
+
+check() {
+  cd TimeDate-$pkgver
+  make test
+}
+
+package() {
+  cd TimeDate-$pkgver
+  make install DESTDIR="$pkgdir"
+}

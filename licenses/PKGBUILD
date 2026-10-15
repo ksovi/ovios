@@ -1,0 +1,110 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: David Runge <dvzrv@archlinux.org>
+# Contributor: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: Dan McGee <dan@archlinux.org>
+
+pkgname=licenses
+pkgver=20240728
+pkgrel=1
+pkgdesc="A set of common license files"
+arch=(any)
+license=(custom:none)
+url="https://www.archlinux.org/"
+source=(
+  https://www.gnu.org/licenses/agpl-3.0.txt
+  apache-2.0.txt::https://www.apache.org/licenses/LICENSE-2.0.txt
+  artistic-2_0.txt
+  boost-1.0.txt::https://www.boost.org/LICENSE_1_0.txt
+  cc-by-3.0.txt
+  cc-by-nc-3.0.txt
+  cc-by-nc-nd-3.0.txt
+  cc-by-nc-sa-3.0.txt
+  cc-by-nd-3.0.txt
+  cc-by-sa-3.0.txt
+  cc-readme.txt
+  cddl-1.0.txt
+  cpl-1.0.txt
+  eclipse-1.0.txt
+  https://www.gnu.org/licenses/fdl-1.2.txt
+  https://www.gnu.org/licenses/fdl-1.3.txt
+  https://www.gnu.org/licenses/gpl-2.0.txt
+  https://www.gnu.org/licenses/gpl-3.0.txt
+  https://www.gnu.org/licenses/lgpl-2.1.txt
+  https://www.gnu.org/licenses/lgpl-3.0.txt
+  https://www.latex-project.org/lppl.txt
+  mpl-1.1.txt::https://www.mozilla.org/media/MPL/1.1/index.txt
+  mpl-2.0.txt::https://www.mozilla.org/media/MPL/2.0/index.txt
+  perlartistic.txt
+  php-3.01.txt::https://www.php.net/license/3_01.txt
+  python-2.txt
+  ruby-license.txt
+  unlicense.txt::https://unlicense.org/UNLICENSE
+  w3c.txt
+  ZopePublicLicense.txt
+)
+sha512sums=('SKIP' 'SKIP' 'c07582f49d8d774385c37fb15804bac136bf8c6eef4cc1b37d5bf890b785f31eeb6ca537385edb469e35003d5adc5fe752d1805ef4b31909bc1be7bc1bb38695' 'SKIP' 'c51c6e3eab06f1d1876f2c4672f839d2bc6730ee71b80f33105e907d4f93fa39e62bf2d914bc6ad6657eb66a0e32d26787294bad37023d4ae2349ea200f7dd95' '26132167b1dc2a451af1c1aadf677a7c5adbe94a8c614c8b270834e8ee24ccb75b9bca33da312ef5a9fd8b79c7d2653052ecb089659cf63dfe33f70f64596e8f' '5b63cf312ec557af66ab55e6b4d338d5f4f6a6a86b240dc18eecdd9c618feec92239a4ced9d8b5edde0b20ba6a67c26d371f2b06f0031b6642244fbb5774bb02' '4ec4234198d9c919bfd795f2be64a43d60316944af07f0e9c815231f991f9d850f8b419d268b1e372e3072d1db6c26d79bd6167db36363913642c7708d3a356f' '6cf3f7be5a5f5e5d5bc0436dcf050bdecb0a28c62b33f4b574624e332240b547dae67ce8b1729407955343d9504cc8f7276d9251a3da53ae97789bf7b8ffc762' '95f6c764dcf30a0e225929d880144c10166da67fba6d690190f77e04a0daa66f26f1eba08b2a8c4893da2853cd3cd52572dcfc857ffa038bd2596e70e1885918' '228b25c065796615e756137a4b52d952624670348e4ea5c937065ae63f96f28cb2342fba9d671ff17f09555b53edf658716c2219b432a75e73e2f3e933184ea1' '3f09a16f19941b39e5206fcdfb8ae4e0b4adeaaf17baba3cce3f0573bb319ac213033392af55eb75355e3f39382ee1b381d6c58b294f376cdbf87537356f9617' '51a43c9de1a8ef92264655118e053b4a2dd1e1fe4a8680cfe90a6a1a87c2c2c5253a1a70f8b12b18aa5ab33756e8a7a9a86fc67701edccd05156bc38ea2cd79c' '861e7f297c4df79b4f218876b850ce1f70687edb7029898e8bfa4255a321ba7e48a82f6b3a9f56779d29b214cce4ce81f0e36c44462065d3b848f3fd30375eb6' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'dc6efc925c7ef8df903d7f7f66b6d3ab17e73e5037bc12c50109925f12c6011e18d873d081d4da1ff2d52669584b7168239132ff2f665ca6d5178f7efe1beaf6' 'SKIP' 'f9d70fce91b44721124b2e1249a93ac902318c294da182a53ef0cf2e8f2f47c19f6b4abf964b598798ecbb954810cf66192a52ec3ace00ea5aacbbfcf8c22363' '767242ed40e94d11521fba9e2a248ae998276f57b7b34e94d91ac392add2f835d8e0c01d1b13ce1def7782dca5dbfdbef37ea9cb802b51561718d299a3b87818' 'SKIP' '5cd651f40ea91397774d2bad8dcfdac0354d5930d892c07908caf6127eb8ee1255744959d51b9a756efa588aefce49d34c9764844282a711b50602295f8a2b3a' '541777a015eb17bfd2dc07f5fb3a9aba950ded5bd0f53a80c52d6f4e2cb85a28a94294dbba1ca54560d0f3aadd749c94a31d67d76c1e4e6fd2255056415d52c7')
+
+b2sums=('SKIP' 'SKIP' '4d249b4e8d54d2d2790a3afb6cf9fe3903985fd540efdc8f26b62b50378f3ac484f7998ee1663d3f4a7cfb624ab1ce4365ac7b9c9b4fde96faa5c33dd13ab237' 'SKIP' '6b8f6fdebc86fc05d931fdf0b8013c815ffd775560ae4a69e917b204999a5cfa5413d665222f140d22e3623c37763794e86dcba17641dad8c226d1d35e17f00b' '9afeb52cf4d5ad9d429fff6c9eade39fad242061b5ddca7e511070c4cfd0d33c73747b6801abb9132aeba09529d80ca0168bd7dbf1b2635d2d2dab76c4fe2d36' '7f376e3d72866e4882f755f973b06fcae1291c9e1ad8d5549f95e637e4b9bafbe3120c465ef3e8128e01edb50da689ba57327d24eab819f57bc8b705d447709c' '14accb9372c6308f2761f9c9cd4489f7f1555ff04084acda9d9ec8e9517c3eb119544b228db0578d7ca229b9d47341a5bf0a1a948499bd35d8d97f508cf51f45' 'a25af7d323742405c2872d7f4c0b62038684239d8bf111b3a94398930d737bb1818b2eba4d9031b6bc79be26ef59087f63ed64d17f0208de5a7ac28ecc1c95b0' '714c13820c79b96799138cada5ea414a79d16c4ed6c6b65dcf532ed73612a25632cbbe6104af4aedf0dc8fe159a18621c849efae25a0503c9e50e611efd1b92a' '086c30075b8ab1f15734df28d739ec7d65b6d1f1ebf681641b5cc7f2d8a2760dc6d40a627bb41046f44e72b2fd9b40b2456fa9bb41a00602fd3a7fefa6b2661c' 'ac86541da47d3d9b05b7b84357a21dca7e170e25b5ae99ab177eacbe7f16298b031302ad01deafee81bfbdef72cb9679abfd24722551b37a55341af03b510146' 'c1f8c0a7c2596a9e8db61505b63f5b7ea54d7c0c86f4e8821bd27160a3976cc3876baef386bfecfc21816a2230a539bf54ae333c6c9241e392312e910ba9f342' '113530ed800ced04cc82a7424577f1edc3234601068ab485c9aaf1ca3f45fe43fed01eee6b2642cba9618a11ab33ac73a3beefbbd6f0de879905df5109935992' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' '953343f375b14990dde1f51b9f9dc1f11d3c70a75f82575698390404af31e2983ba9acf03139e65026c737bf7afadd7b956e4ddd94fe303e1438041dc1667c79' 'SKIP' '9ff800831a5c1d3b45a98c56d513935dc5b1e50e285de658d499fdc6d52736998b58cc5a5ecca83b8c98d38869122f01633e8e3ed8b9771e5919ab0f61da2cc4' '0b1e59408032239cd6ea8765eabca5cafccfce94a05785824aba1dc8b37188695bf7990e3454b0f2d0b399f1a22c30de7f056e2f685fafadcef71cd1a91a6796' 'SKIP' '41fe12d3613e61134c9b027c6e3dacacdc368e6eecc1614578850f5b784813b41cf2089418738706939db2c7fb9f17cdab005cd134a440a8aadf8b887aa8fa48' '63aefec94bf37792b1b10ee4ae36a5ad54f5df1ef175eddf8528bc8fb1c5a71cf7c258f856f99a9ed4e678c9226f0ac99ea825fc68e10695e905a618c36896e8')
+
+package() {
+  local _license_dir="$pkgdir/usr/share/licenses/common"
+
+  install -vDm 644 agpl-3.0.txt "$_license_dir/"AGPL3/license.txt
+  ln -s AGPL3 "$_license_dir/"AGPL
+
+  install -vDm 644 apache-2.0.txt "$_license_dir/"Apache/license.txt
+  ln -s Apache "$_license_dir/"APACHE
+
+  install -vDm 644 artistic-2_0.txt "$_license_dir/"Artistic2.0/license.txt
+
+  install -vDm 644 boost-1.0.txt "$_license_dir/"Boost/license.txt
+
+  install -vDm 644 cc-by-3.0.txt -t "$_license_dir/"CCPL/
+  install -vDm 644 cc-by-nc-3.0.txt -t "$_license_dir/"CCPL/
+  install -vDm 644 cc-by-nc-nd-3.0.txt -t "$_license_dir/"CCPL/
+  install -vDm 644 cc-by-nc-sa-3.0.txt -t "$_license_dir/"CCPL/
+  install -vDm 644 cc-by-nd-3.0.txt -t "$_license_dir/"CCPL/
+  install -vDm 644 cc-by-sa-3.0.txt -t "$_license_dir/"CCPL/
+  install -vDm 644 cc-readme.txt -t "$_license_dir/"CCPL/
+
+  install -vDm 644 cddl-1.0.txt "$_license_dir/"CDDL/license.txt
+
+  install -vDm 644 cpl-1.0.txt "$_license_dir/"CPL/license.txt
+
+  install -vDm 644 eclipse-1.0.txt "$_license_dir/"EPL/license.txt
+
+  install -vDm 644 gpl-2.0.txt "$_license_dir/"GPL2/license.txt
+  install -vDm 644 gpl-3.0.txt "$_license_dir/"GPL3/license.txt
+  ln -s GPL2 "$_license_dir/"GPL
+
+  install -vDm 644 fdl-1.2.txt "$_license_dir/"FDL1.2/license.txt
+  install -vDm 644 fdl-1.3.txt "$_license_dir/"FDL1.3/license.txt
+  ln -s FDL1.2 "$_license_dir/"FDL
+
+  install -vDm 644 lgpl-2.1.txt "$_license_dir/"LGPL2.1/license.txt
+  install -vDm 644 lgpl-3.0.txt "$_license_dir/"LGPL3/license.txt
+  ln -s LGPL2.1 "$_license_dir/"LGPL
+
+  install -vDm 644 lppl.txt "$_license_dir/"LPPL/license.txt
+
+  install -vDm 644 mpl-1.1.txt "$_license_dir/"MPL/license.txt
+
+  install -vDm 644 mpl-2.0.txt "$_license_dir/"MPL2/license.txt
+
+  install -vDm 644 perlartistic.txt "$_license_dir/"PerlArtistic/license.txt
+
+  install -vDm 644 php-3.01.txt "$_license_dir/"PHP/license.txt
+
+  install -vDm 644 python-2.txt "$_license_dir/"PSF/license.txt
+
+  install -vDm 644 ruby-license.txt "$_license_dir/"RUBY/license.txt
+
+  install -vDm 644 unlicense.txt "$_license_dir/"Unlicense/license.txt
+
+  install -vDm 644 w3c.txt "$_license_dir/"W3C/license.txt
+
+  install -vDm 644 ZopePublicLicense.txt "$_license_dir/"ZPL/license.txt
+}
+
+# vim: ts=2 sw=2 et:

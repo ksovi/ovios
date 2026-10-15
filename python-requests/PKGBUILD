@@ -1,13 +1,30 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Felix Yan <felixonmars@archlinux.org>
+# Contributor: Massimiliano Torromeo <massimiliano.torromeo@gmail.com>
+
 pkgname=python-requests
-pkgver=2.27.1
+pkgver=2.34.2
 pkgrel=1
 pkgdesc="Python HTTP for Humans"
 arch=('any')
-url="http://python-requests.org"
+url="https://requests.readthedocs.io/"
 license=('Apache')
-source=("$pkgname-$pkgver.tar.gz"
+depends=('python-urllib3' 'python-chardet' 'python-idna')
+makedepends=(
+  python-build
+  python-installer
+  python-wheel
+  python-setuptools
+  python-chardet
+  python-urllib3
+  python-idna
+)
+checkdepends=('python-pytest-httpbin' 'python-pytest-mock' 'python-pysocks' 'python-trustme')
+optdepends=('python-pysocks: SOCKS proxy support')
+source=("https://github.com/psf/requests/archive/v$pkgver/$pkgname-$pkgver.tar.gz"
         certs.patch)
+sha512sums=('SKIP' '424a3bb01b23409284f6c9cd2bc22d92df31b85cfd96e1d1b16b5d68adeca670dfed4fff7977d8b10980102b0f780eacc465431021fcd661f3a17168a02a39a3')
 
 prepare() {
   cd requests-$pkgver
@@ -21,11 +38,21 @@ prepare() {
 
 build() {
   cd requests-$pkgver
-  python setup.py build
+  python -m build --wheel --no-isolation
 }
 
+check() {
+  # Seems to be a problem about pytest-httpbin:
+  # pytest-httpbin server hit an exception serving request: [SSL: HTTP_REQUEST] http request (_ssl.c:1129)
+  # pytest-httpbin server hit an exception serving request: [SSL: TLSV1_ALERT_UNKNOWN_CA] tlsv1 alert unknown ca (_ssl.c:1129)
+
+  cd requests-$pkgver
+  pytest tests --deselect tests/test_requests.py::TestRequests::test_pyopenssl_redirect
+}
 
 package() {
   cd requests-$pkgver
-  python setup.py install --skip-build -O1 --root="$pkgdir"
+  python -m installer --destdir="$pkgdir" dist/*.whl
 }
+
+# vim: ts=2 sw=2 et:

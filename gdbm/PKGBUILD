@@ -1,23 +1,53 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
-pkgname=gdbm 
-pkgver=1.23
-pkgrel=1 
-pkgdesc="The GNU Database Manager." 
-arch=(i686 x86_64) 
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: David Runge <dvzrv@archlinux.org>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Stéphane Gaudreault <stephane@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
 
-groups=(ovios)
+pkgname=gdbm
+pkgver=1.26
+pkgrel=2
+pkgdesc="GNU database library"
+arch=(x86_64)
+url="https://www.gnu.org/software/gdbm/gdbm.html"
+license=(GPL3)
+depends=(glibc sh)
+makedepends=(readline)
+provides=(libgdbm_compat.so libgdbm.so)
+source=(https://ftp.gnu.org/gnu/gdbm/$pkgname-$pkgver.tar.gz{,.sig})
+sha512sums=('SKIP' 'SKIP')
 
-source=($pkgname-$pkgver.tar.gz)
+b2sums=('SKIP' 'SKIP')
 
-build() { 
-        cd "$srcdir/$pkgname-$pkgver" 
-		./configure --prefix=/usr    \
-            --disable-static \
-            --enable-libgdbm-compat
-        make
+validpgpkeys=('325F650C4C2B6AD58807327A3602B07F55D0C732') # Sergey Poznyakoff <gray@gnu.org>
+
+prepare() {
+  cd $pkgname-$pkgver
+  autoreconf -fiv
 }
 
-package() { 
-        cd "$srcdir/$pkgname-$pkgver" 
-        make DESTDIR="$pkgdir" install
+build() {
+  local configure_options=(
+    --prefix=/usr
+    --enable-libgdbm-compat
+  )
+
+  cd $pkgname-$pkgver
+  ./configure "${configure_options[@]}"
+  make
+}
+
+check() {
+  make check -C $pkgname-$pkgver
+}
+
+package() {
+  depends+=(
+    readline libreadline.so
+  )
+
+  make DESTDIR="$pkgdir" install -C $pkgname-$pkgver
+  install -vDm 644 $pkgname-$pkgver/{NOTE-WARNING,AUTHORS,NEWS,README,ChangeLog} -t "$pkgdir/usr/share/doc/$pkgname"
 }

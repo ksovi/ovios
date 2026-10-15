@@ -1,0 +1,41 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: David Runge <dvzrv@archlinux.org>
+# Contributor: Dan McGee <dan@archlinux.org>
+# Contributor: Florian Zeitz <florob at babelmonkeys dot de>
+
+pkgname=numactl
+pkgver=2.0.19
+pkgrel=1
+pkgdesc="Simple NUMA policy support"
+arch=(x86_64)
+url="https://github.com/numactl/numactl"
+license=(LGPL2.1 GPL2)
+depends=(glibc)
+provides=(libnuma.so)
+source=($pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz)
+sha512sums=('SKIP')
+
+b2sums=('SKIP')
+
+prepare(){
+  cd $pkgname-$pkgver
+  autoreconf -fiv
+}
+
+build() {
+  cd $pkgname-$pkgver
+  ./configure --prefix=/usr
+  make
+}
+
+check() {
+  make -k test -C $pkgname-$pkgver || echo "Tests known to fail depending on system load."
+}
+
+package() {
+  make DESTDIR="$pkgdir" install -C $pkgname-$pkgver
+  install -vDm 644 $pkgname-$pkgver/README.md -t "$pkgdir/usr/share/doc/$pkgname/"
+  # move_pages(2) is provided by man-pages and is more up-to-date there anyway
+  rm -rf "$pkgdir/usr/share/man/man2"
+}

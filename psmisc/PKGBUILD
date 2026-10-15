@@ -1,22 +1,29 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
-pkgname=psmisc 
-pkgver=23.4
-pkgrel=1 
-pkgdesc="The Psmisc package contains programs for displaying information about running processes." 
-arch=(i686 x86_64) 
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Eric Bélanger <eric@archlinux.org>
 
-groups=(ovios)
+pkgname=psmisc
+pkgver=23.7
+pkgrel=2
+pkgdesc='Miscellaneous procfs tools'
+arch=('x86_64')
+url='https://gitlab.com/psmisc/psmisc'
+license=('GPL')
+depends=('ncurses')
+validpgpkeys=('5D2FB320B825D93904D205193938F96BDF50FEA5') # Craig Small <csmall@debian.org>
+source=("https://downloads.sourceforge.net/psmisc/${pkgname}-${pkgver}.tar.xz"{,.asc})
+sha256sums=('SKIP' 'SKIP')
 
-source=($pkgname-$pkgver.tar.xz)
+build() {
+  cd ${pkgname}-${pkgver}
 
-build() { 
-        cd "$srcdir/$pkgname-$pkgver" 
-		
-		./configure --prefix=/usr
-        make
+  ./configure \
+    --prefix=/usr
+  make
 }
 
-package() { 
-        cd "$srcdir/$pkgname-$pkgver" 
-        make DESTDIR="$pkgdir" install
+package() {
+  cd ${pkgname}-${pkgver}
+
+  make DESTDIR="${pkgdir}" install
 }

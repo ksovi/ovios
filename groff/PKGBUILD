@@ -1,21 +1,62 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: 
+
 pkgname=groff
-pkgver=1.22.4
+pkgver=1.24.2
 pkgrel=1
-pkgdesc="The Groff package contains programs for processing and formatting text." 
-arch=(i686 x86_64) 
+pkgdesc='GNU troff text-formatting system'
+arch=('x86_64')
+url='https://www.gnu.org/software/groff/groff.html'
+license=('GPL')
+depends=('perl' 'gcc-libs')
+makedepends=('netpbm' 'psutils'  'libxaw' 'perl-file-homedir')
+optdepends=('netpbm: for use together with man -H command interaction in browsers'
+            'psutils: for use together with man -H command interaction in browsers'
+            'libxaw: for gxditview'
+            'perl-file-homedir: for use with glilypond')
+options=('!docs' '!emptydirs' '!makeflags')
+validpgpkeys=('2D0C08D2B0AD0D3D8626670272D23FBAC99D4E75') # Bertrand Garrigues <bertrand.garrigues@laposte.net>
+source=("https://ftp.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}.tar.gz"{,.sig}
+        display-utc-times.patch
+        'site.tmac')
+sha256sums=('SKIP' 'SKIP' 'b1e0bcbe1e0737aed1301066ff92a1e7fa0bd8b80a36321f92f519366a1acdb3' 'a2f4c5657595c5961c2c2b80e77b1126a2fc0a0caea5c0660b36255b3d85b7ff')
 
-groups=(ovios)
+prepare() {
+  cd $pkgname-$pkgver
+  # always use UTC times for display - using localtime is problematic for reproducible builds
+  # fixes FS#69123 - patch taken from Debian
+  patch -Np1 -i ../display-utc-times.patch
+}  
 
-source=($pkgname-$pkgver.tar.gz)
+build() {
+  cd $pkgname-$pkgver
 
-build() { 
-    cd "$srcdir/$pkgname-$pkgver"
-	PAGE=letter ./configure --prefix=/usr
-	make
+  ./configure \
+    --prefix=/usr \
+    --with-x \
+    --with-appresdir=/usr/share/X11/app-defaults
+  make
 }
 
-package() { 
-    cd "$srcdir/$pkgname-$pkgver"
-	make DESTDIR=${pkgdir} install
+check() {
+  cd $pkgname-$pkgver
+  make check
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir" install
+  
+  # add compatibility symlinks
+  ln -s eqn "$pkgdir"/usr/bin/geqn
+  ln -s tbl "$pkgdir"/usr/bin/gtbl
+  ln -s soelim "$pkgdir"/usr/bin/zsoelim
+
+  # FS33760 - TERMCAP variables not followed
+  # TODO: everyone is doing this - find out why upstream does not...
+  cat "$srcdir"/site.tmac >> \
+    "$pkgdir"/usr/share/groff/site-tmac/man.local
+  cat "$srcdir"/site.tmac >> \
+    "$pkgdir"/usr/share/groff/site-tmac/mdoc.local
 }

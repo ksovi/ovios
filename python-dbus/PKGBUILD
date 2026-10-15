@@ -1,0 +1,38 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+pkgname=python-dbus
+_name=dbus-python
+pkgver=1.5.0
+pkgrel=1
+pkgdesc="Python bindings for DBUS"
+url="https://www.freedesktop.org/wiki/Software/DBusBindings"
+arch=(x86_64)
+license=('GPL' 'LGPL')
+depends=('dbus' 'glib2' 'python')
+makedepends=('autoconf-archive' 'python-sphinx_rtd_theme' 'python-sphinx')
+source=(https://dbus.freedesktop.org/releases/${_name}/${_name}-${pkgver}.tar.gz{,.asc})
+sha256sums=('SKIP' 'SKIP')
+
+validpgpkeys=('DA98F25C0871C49A59EAFF2C4DE8FF2A63C7CC90')
+replaces=('python-dbus-common')
+conflicts=('python-dbus-common')
+provides=("python-dbus-common=$pkgver")
+
+prepare() {
+  cd $_name-$pkgver
+  autoreconf -vfi
+}
+
+build() {
+  cd $_name-$pkgver
+  ./configure --prefix=/usr
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+  make
+}
+
+package() {
+  cd $_name-$pkgver
+  make DESTDIR="${pkgdir}" install
+}

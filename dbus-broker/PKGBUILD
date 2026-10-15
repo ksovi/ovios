@@ -1,0 +1,71 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: David Herrmann <dh.herrmann@gmail.com>
+
+pkgbase=dbus-broker
+pkgname=(
+  dbus-broker
+  dbus-broker-units
+)
+pkgver=37
+pkgrel=3
+pkgdesc="Linux D-Bus Message Broker"
+url="https://github.com/bus1/dbus-broker/wiki"
+arch=(x86_64)
+license=(Apache)
+depends=(
+  audit
+  expat
+  systemd-libs
+)
+makedepends=(
+  meson
+  python-docutils
+  systemd
+)
+source=(
+  https://github.com/bus1/dbus-broker/releases/download/v$pkgver/$pkgbase-$pkgver.tar.xz{,.asc}
+)
+sha256sums=('SKIP' 'SKIP')
+
+validpgpkeys=(BE5FBC8C9C1C9F60A4F0AEAE7A4F3A09EBDEFF26) # David Herrmann <dh.herrmann@gmail.com>
+
+prepare() {
+  cd $pkgbase-$pkgver
+}
+
+build() {
+  local meson_options=(
+    -D audit=true
+    -D docs=true
+    -D linux-4-17=true
+    -D system-console-users=gdm,sddm,lightdm,lxdm
+  )
+
+  arch-meson $pkgbase-$pkgver build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+package_dbus-broker() {
+  meson install -C build --destdir "$pkgdir"
+
+  # Split systemd units
+  mkdir -p units/usr/lib
+  mv {"$pkgdir",units}/usr/lib/systemd
+}
+
+package_dbus-broker-units() {
+  pkgdesc+=" - systemd units"
+  depends=(dbus-broker)
+  provides=(dbus-units)
+  conflicts=(dbus-units)
+
+  mv units/* "$pkgdir"
+}
+
+# vim:set sw=2 sts=-1 et:

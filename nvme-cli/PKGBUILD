@@ -1,0 +1,48 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Morten Linderud <foxboron@archlinux.org>
+# Contributor: Devin Cofer <ranguvar[at]ranguvar[dot]io>
+# Contributor: DriverX
+# Contributor: Nicolas Quiénot <niQo @ aur>
+# Contributor: Martin Schrodt <martin@schrodt.org>
+
+pkgname=nvme-cli
+pkgver=3.1
+pkgrel=1
+pkgdesc="NVM-Express user space tooling for Linux"
+arch=('i686' 'x86_64')
+url="https://github.com/linux-nvme/nvme-cli"
+license=('GPL')
+makedepends=('systemd' 'meson' 'git' 'asciidoc' 'xmlto' 'swig')
+depends=('util-linux' 'libsystemd')
+options=(strip)
+install=nvme-cli.install
+# checkdepends=('python2-nose' 'python-nose')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/linux-nvme/${pkgname}/archive/v${pkgver}.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+	cd "${pkgname}-${pkgver}"
+	meson setup \
+	--prefix /usr \
+	--libexecdir lib \
+	--sbindir bin \
+	--buildtype plain \
+	--auto-features enabled \
+	-D b_lto=true -D b_pie=true \
+	-D docs=man -D docs-build=true \
+	-D systemddir=lib/systemd/system/ \
+	-D udevrulesdir=lib/udev/rules.d \
+	.build
+}
+
+# Tests require a working NVME disk.
+# check() {
+# 	cd "${pkgname}-${pkgver}"
+# 	make test
+# }
+
+package() {
+	cd "${pkgname}-${pkgver}"
+	DESTDIR="$pkgdir" meson install -C .build
+}

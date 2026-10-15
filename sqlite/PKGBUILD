@@ -1,21 +1,27 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+
 pkgbase="sqlite"
 pkgname=('sqlite' 'sqlite-tcl' 'sqlite-analyzer' 'lemon' 'sqlite-doc')
-_srcver=3380200
+_srcver=3420000
 _docver=${_srcver}
 #_docver=3330000
-pkgver=3.38.2
+pkgver=3.54.0
 pkgrel=1
 pkgdesc="A C library that implements an SQL database engine"
 arch=('x86_64')
 license=('custom:Public Domain')
 url="https://www.sqlite.org/"
 makedepends=('tcl' 'readline' 'zlib')
-source=(https://www.sqlite.org/2022/sqlite-src-${_srcver}.zip
-        https://www.sqlite.org/2022/sqlite-doc-${_docver}.zip
+options=('!emptydirs')
+source=(https://www.sqlite.org/2023/sqlite-src-${_srcver}.zip
+        https://www.sqlite.org/2023/sqlite-doc-${_docver}.zip
         sqlite-lemon-system-template.patch
         license.txt)
-options=('!emptydirs' '!makeflags') # json extensions breaks parallel build
+# upstream now switched to sha3sums - currently not supported by makepkg
+sha256sums=('SKIP' 'SKIP' '55746d93b0df4b349c4aa4f09535746dac3530f9fd6de241c9f38e2c92e8ee97' '4e57d9ac979f1c9872e69799c2597eeef4c6ce7224f3ede0bf9dc8d217b1e65d')
 
 prepare() {
   cd sqlite-src-$_srcver
@@ -33,6 +39,7 @@ build() {
 	-DSQLITE_ENABLE_UNLOCK_NOTIFY \
 	-DSQLITE_ENABLE_DBSTAT_VTAB=1 \
 	-DSQLITE_ENABLE_FTS3_TOKENIZER=1 \
+	-DSQLITE_ENABLE_FTS3_PARENTHESIS \
 	-DSQLITE_SECURE_DELETE \
 	-DSQLITE_ENABLE_STMTVTAB \
 	-DSQLITE_MAX_VARIABLE_NUMBER=250000 \
@@ -43,12 +50,10 @@ build() {
   cd sqlite-src-$_srcver
   ./configure --prefix=/usr \
 	--disable-static \
-	--disable-amalgamation \
 	--enable-fts3 \
 	--enable-fts4 \
 	--enable-fts5 \
 	--enable-rtree \
-	--enable-json1 \
 	TCLLIBDIR=/usr/lib/sqlite$pkgver
   sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
   make
@@ -60,7 +65,7 @@ package_sqlite() {
 
  pkgdesc="A C library that implements an SQL database engine"
  depends=('readline' 'zlib')
- provides=("sqlite3=$pkgver")
+ provides=("sqlite3=$pkgver" 'libsqlite3.so')
  replaces=("sqlite3")
 
   cd sqlite-src-$_srcver

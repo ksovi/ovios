@@ -1,16 +1,21 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Muflone http://www.muflone.com/contacts/english/
+# Contributor: Brian Bidulock <bidulock@openss7.org>
+# Contributor: Jason St. John <jstjohn .. purdue . edu>
+
 pkgname=perl-config-general
 _perl_namespace=Config
 _perl_module=General
-pkgver=2.63
-pkgrel=4
+pkgver=2.67
+pkgrel=1
 pkgdesc="Generic Config Module"
 arch=('any')
-groups=(ovios)
-url="https://metacpan.org/release/${_perl_namespace}-${_perl_module}"
+url="https://metacpan.org/dist/${_perl_namespace}-${_perl_module}"
 license=('PerlArtistic' 'GPL')
 depends=('perl')
 source=("https://www.cpan.org/modules/by-module/${_perl_namespace}/${_perl_namespace}-${_perl_module}-${pkgver}.tar.gz")
+sha256sums=('SKIP')
 
 options=('!emptydirs')
 

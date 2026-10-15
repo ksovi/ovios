@@ -1,38 +1,63 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Christian Hesse <mail@eworm.de>
 
-pkgname=libxcrypt
-# Neither tarballs nor tags are signed, but commits are.
-_commit='6b110bcd4f4caa61fc39c7339d30adc20a7dd177' # git rev-parse v${pkgver}
-pkgver=4.4.28
+pkgbase=libxcrypt
+pkgname=(libxcrypt libxcrypt-compat)
+pkgver=4.5.2
 pkgrel=1
 pkgdesc='Modern library for one-way hashing of passwords'
 arch=('x86_64')
 url='https://github.com/besser82/libxcrypt/'
 license=('GPL')
 depends=('glibc')
-source=(${pkgname}-${pkgver}.tar.xz)
-sha256sums=('SKIP')
-groups=(ovios)
-
-prepare() {
-  cd $pkgname-$pkgver
-  autoreconf -fi
-}
+provides=('libcrypt.so')
+install=libxcrypt.install
+validpgpkeys=('678CE3FEE430311596DB8C16F52E98007594C21D') # Björn 'besser82' Esser
+source=("${url}/releases/download/v${pkgver}/${pkgbase}-${pkgver}.tar.xz"{,.asc})
+sha256sums=('SKIP' 'SKIP')
 
 build() {
-  cd $pkgname-$pkgver
-  ./configure \
+  mkdir build-libxcrypt build-libxcrypt-compat
+
+  cd "${srcdir}/build-libxcrypt/"
+  "${srcdir}/${pkgbase}-${pkgver}"/configure \
     --prefix=/usr \
     --disable-static \
     --enable-hashes=strong,glibc \
     --enable-obsolete-api=no \
-    --disable-failure-tokens \
-    --disable-werror
+    --disable-failure-tokens
+  make
+  
+  cd "${srcdir}/build-libxcrypt-compat/"
+  "${srcdir}/${pkgbase}-${pkgver}"/configure \
+    --prefix=/usr \
+    --disable-static \
+    --enable-hashes=strong,glibc \
+    --enable-obsolete-api=glibc \
+    --disable-failure-tokens
   make
 }
 
-package() {
-  cd $pkgname-$pkgver
-  make DESTDIR="$pkgdir" install
+check() {
+  cd build-libxcrypt/
+
+  make check 
 }
 
+package_libxcrypt() {
+  cd build-libxcrypt/
+
+  make DESTDIR="${pkgdir}" install
+}
+
+package_libxcrypt-compat() {
+  pkgdesc='Modern library for one-way hashing of passwords - legacy API functions'
+  depends=('libxcrypt')
+  
+  cd build-libxcrypt-compat/
+
+  make DESTDIR="${pkgdir}" install
+
+  rm -rf "${pkgdir}"/usr/{include,lib/{lib*.so,pkgconfig},share}
+}

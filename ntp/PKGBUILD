@@ -1,42 +1,53 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Lukas Fleischer <lfleischer@archlinux.org>
+# Contributor: Gaetan Bisson <bisson@archlinux.org>
+# Contributor: kevin <kevin@archlinux.org>
+
 pkgname=ntp
-pkgver=4.2.8p15
-pkgrel=1
-pkgdesc="a client and server to keep the time synchronized between various computers over a network.."
-arch=(any)
-groups=(ovios)
+_pkgname=ntp #-dev
+_pkgver=4.2.8p15
+pkgver=4.2.8.p18
+pkgrel=6
+pkgdesc='Network Time Protocol reference implementation'
+url='http://www.ntp.org/'
+license=('custom')
+arch=('x86_64')
+depends=('openssl' 'perl' 'libcap' 'libedit')
 backup=('etc/ntp.conf')
-source=(https://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/ntp-${pkgver}.tar.gz
-	ntp.conf)
+source=("https://www.eecis.udel.edu/~ntp/ntp_spool/ntp4/ntp-4.2/${_pkgname}-${_pkgver}.tar.gz"
+        'ntp-4.2.8_p15-glibc-2.34.patch'
+        'ntp.conf'
+        'ntpd.service'
+        'ntpdate.service'
+        'ntp.sysusers')
+sha1sums=('SKIP' '1423b8ef72a3806ed74affc1973f66ed7cfa2afb' 'ad1d6ee2e9aca64a84a7224c88bf6008ac6c69e1' '0cccca872385e0142888ab48d273fec0669b30a8' '059b382d1af0c55202e2d17f2ae065a2cbfec9ee' 'e8d1c895eabeb45b1a5f096fa5fc3c088eb3ee71')
+
+options=('!emptydirs')
 
 prepare() {
-	groupadd -g 87 ntp
-        useradd -c "Network Time Protocol" -d /var/lib/ntp -u 87 \
-                -g ntp -s /bin/false ntp 
+	cd "${srcdir}/${_pkgname}-${_pkgver}"
+	patch -Np1 -i ../ntp-4.2.8_p15-glibc-2.34.patch
 }
 
 build() {
-  cd ${pkgname}-${pkgver}
-  sed -e 's/"(\\S+)"/"?([^\\s"]+)"?/' \
-    -i scripts/update-leap/update-leap.in
-  sed -e 's/#ifndef __sun/#if !defined(__sun) \&\& !defined(__GLIBC__)/' \
-    -i libntp/work_thread.c
+	cd "${srcdir}/${_pkgname}-${_pkgver}"
 
-  ./configure --prefix=/usr         \
-            --bindir=/usr/sbin    \
-            --sysconfdir=/etc     \
-            --enable-linuxcaps    \
-            --with-lineeditlibs=readline \
-            --docdir=/usr/share/doc/ntp-${pkgver} 
+	./configure --prefix=/usr --libexecdir=/usr/lib --enable-linuxcaps --enable-ntp-signd
 	make
-}  
-
-package() {  
-	cd ${pkgname}-${pkgver}  
-	make DESTDIR=${pkgdir} install
-	mkdir -pv ${pkgdir}/var/lib/
-	mkdir -pv ${pkgdir}/etc
-	install -v -o ntp -g ntp -d ${pkgdir}/var/lib/ntp
-	cp  ../ntp.conf  ${pkgdir}/etc/
 }
 
+package() {
+	cd "${srcdir}/${_pkgname}-${_pkgver}"
+
+	make DESTDIR="${pkgdir}" install
+
+	install -Dm644 ../ntp.conf "${pkgdir}"/etc/ntp.conf
+	install -Dm644 ../ntpd.service "${pkgdir}"/usr/lib/systemd/system/ntpd.service
+	install -Dm644 ../ntpdate.service "${pkgdir}"/usr/lib/systemd/system/ntpdate.service
+	install -Dm644 ../ntp.sysusers "${pkgdir}"/usr/lib/sysusers.d/ntp.conf
+	install -Dm644 COPYRIGHT "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+
+	install -d -o 87 "${pkgdir}"/var/lib/ntp
+	echo > "${pkgdir}/var/lib/ntp/.placeholder"
+}

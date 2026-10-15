@@ -1,0 +1,32 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Daniel Wallace <danielwallace at gtmanfred dot com>
+# Contributor: Limao Luo <luolimao+AUR@gmail.com>
+
+pkgname=python-jsonpointer
+pkgver=3.2.1
+pkgrel=1
+pkgdesc="Identify specific nodes in a JSON document (RFC 6901)"
+arch=('any')
+url="https://github.com/stefankoegl/python-json-pointer"
+license=('BSD')
+depends=('python')
+makedepends=('python-setuptools')
+source=("https://pypi.io/packages/source/j/jsonpointer/jsonpointer-$pkgver.tar.gz")
+sha512sums=('SKIP')
+
+build() {
+    cd "$srcdir"/jsonpointer-$pkgver
+    python setup.py build
+}
+
+check() {
+    cd "$srcdir"/jsonpointer-$pkgver
+    python tests.py
+}
+
+package_python-jsonpointer() {
+    cd jsonpointer-$pkgver
+    python setup.py install --prefix=/usr --root="$pkgdir"
+    install -Dm644 LICENSE.txt "$pkgdir"/usr/share/licenses/$pkgname/LICENSE.txt
+}

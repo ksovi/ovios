@@ -1,21 +1,52 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+# Mainainer: Sébastien "Seblu" Luttringer <seblu@archlinux.org>
+
 pkgname=tar
-pkgver=1.34
-pkgrel=1
-pkgdesc="A program to create tar archives as well as perform various other kinds of archive manipulation." 
-arch=(i686 x86_64) 
+pkgver=1.35
+pkgrel=5
+pkgdesc='Utility used to store, backup, and transport files'
+arch=('x86_64')
+url='https://www.gnu.org/software/tar/'
+license=('GPL3')
+depends=('glibc' 'acl')
+checkdepends=('attr')
+options=('!emptydirs')
+validpgpkeys=('325F650C4C2B6AD58807327A3602B07F55D0C732') # Sergey Poznyakoff
+source=("https://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.xz"{,.sig}
+        '01-fix-cve-2022-48303.patch')
+sha256sums=('SKIP' 'SKIP' 'f31bbde67ab1117b07441395c99aced81d038bf0c8a89810bd751a3cc21acfbd')
 
-groups=(ovios)
-
-source=($pkgname-$pkgver.tar.xz)
-
-build() { 
-    cd "$srcdir/$pkgname-$pkgver"
-	FORCE_UNSAFE_CONFIGURE=1 ./configure --prefix=/usr
-	make
+prepare() {
+  cd $pkgname-$pkgver
+  # apply patch from the source array (should be a pacman feature)
+  local src
+  for src in "${source[@]}"; do
+    src="${src%%::*}"
+    src="${src##*/}"
+    [[ $src = *.patch ]] || continue
+    msg2 "Applying patch $src..."
+    patch -Np1 < "../$src"
+  done
+  :
 }
 
-package() { 
-    cd "$srcdir/$pkgname-$pkgver"
-	make DESTDIR=${pkgdir} install
+build() {
+  cd $pkgname-$pkgver
+  ./configure --prefix=/usr --libexecdir=/usr/lib/tar
+  make
 }
+
+check() {
+  cd $pkgname-$pkgver
+  make check
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir" install
+}
+
+# vim:set ts=2 sw=2 et:

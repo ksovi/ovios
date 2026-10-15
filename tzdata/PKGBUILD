@@ -1,29 +1,53 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
-pkgname=tzdata-ovios
-pkgver=1.0
-pkgrel=1
-groups=(ovios)
-pkgdesc='Timezone data for OviOS'
-arch=('x86_64')
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
 
-source=(tzdata2021e.tar.gz)
+pkgname=tzdata
+pkgver=2026e
+_tzcode=2023c
+_tzdata=2023c
+pkgrel=1
+pkgdesc="Sources for time zone and daylight saving time data"
+arch=('x86_64')
+url="https://www.iana.org/time-zones"
+license=('custom: public domain')
+optdepends=('bash: for tzselect'
+            'glibc: for zdump, zic')
+options=('!emptydirs')
+source=(https://www.iana.org/time-zones/repository/releases/tzcode${_tzcode}.tar.gz{,.asc}
+        https://www.iana.org/time-zones/repository/releases/${pkgname}${_tzdata}.tar.gz{,.asc})
+sha512sums=('SKIP' 'SKIP' 'SKIP' 'SKIP')
+
+validpgpkeys=('7E3792A9D8ACF7D633BC1588ED97E90E62AA7E34') # Paul Eggert <eggert@cs.ucla.edu>
+
+_timezones=('africa' 'antarctica' 'asia' 'australasia'
+           'europe' 'northamerica' 'southamerica'
+           'etcetera' 'backward' 'factory')
+
+prepare() {
+  sed -i "s:sbin:bin:g" Makefile
+}
+
 build() {
-	mkdir "$srcdir"/TZDATA
-	cd "$srcdir"/TZDATA
-	tar -xf ../tzdata2021e.tar.gz
+  make LFLAGS="${LDFLAGS} ${LTOFLAGS}"
 }
 
 package() {
-	cd "$srcdir"/TZDATA
-	ZONEINFO=${pkgdir}/usr/share/zoneinfo
-	mkdir -pv $ZONEINFO/{posix,right}
-        for tz in etcetera southamerica northamerica europe africa antarctica  \
-          asia australasia backward; do
-          zic -L /dev/null   -d $ZONEINFO       ${tz}
-          zic -L /dev/null   -d $ZONEINFO/posix ${tz}
-          zic -L leapseconds -d $ZONEINFO/right ${tz}
-         done
-         cp -v zone.tab zone1970.tab iso3166.tab $ZONEINFO
-	 zic -d $ZONEINFO -p America/New_York
-	 unset ZONEINFO
+  cd "${srcdir}"
+  # install tzcode stuff
+  make DESTDIR="${pkgdir}" install
+
+  # install tzdata stuff
+  ./zic -b fat -d "${pkgdir}"/usr/share/zoneinfo ${_timezones[@]}
+  ./zic -b fat -d "${pkgdir}"/usr/share/zoneinfo/posix ${_timezones[@]}
+  ./zic -b fat -d "${pkgdir}"/usr/share/zoneinfo/right -L leapseconds ${_timezones[@]}
+  # This creates the posixrules file. We use New York because POSIX requires the daylight savings time rules to be in accordance with US rules.   
+  ./zic -b fat -d "${pkgdir}"/usr/share/zoneinfo -p America/New_York
+  install -m644 -t "${pkgdir}"/usr/share/zoneinfo iso3166.tab leap-seconds.list zone1970.tab zone.tab SECURITY # zone.tab is depricated and will go soon
+  
+  # cleanup
+  rm "${pkgdir}/etc/localtime"
+
+  # install license
+  install -Dm644 LICENSE "${pkgdir}"/usr/share/licenses/${pkgname}/LICENSE
 }

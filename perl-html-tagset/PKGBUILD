@@ -1,0 +1,36 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Felix Yan <felixonmars@gmail.com>
+# Contributor: Manolis Tzanidakis
+# Conributor: kevin <kevin@archlinux.org>
+
+pkgname=perl-html-tagset
+pkgver=3.24
+pkgrel=4
+pkgdesc="Data tables useful in parsing HTML"
+arch=('any')
+license=('PerlArtistic')
+url="https://search.cpan.org/dist/HTML-Tagset/"
+depends=('perl')
+options=(!emptydirs)
+source=(https://www.cpan.org/authors/id/P/PE/PETDANCE/HTML-Tagset-$pkgver.tar.gz)
+sha256sums=('SKIP')
+
+build() {
+  cd HTML-Tagset-$pkgver
+  # install module in vendor directories.
+  perl Makefile.PL INSTALLDIRS=vendor
+  make
+}
+
+check() {
+  cd HTML-Tagset-$pkgver
+  make test
+}
+
+package() {
+  cd HTML-Tagset-$pkgver
+  make install DESTDIR="$pkgdir"
+}
+
+# vim: ts=2 sw=2 et ft=sh

@@ -1,6 +1,4 @@
-
 post_upgrade() {
-  mkdir -p /usr/lib/locale
   locale-gen
 
   ldconfig -r .

@@ -1,0 +1,39 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: David Runge <dvzrv@archlinux.org>
+
+_name=aiosmtpd
+pkgname=python-aiosmtpd
+pkgver=1.4.6
+pkgrel=5
+pkgdesc="An asyncio based SMTP server"
+arch=(any)
+url="https://github.com/aio-libs/aiosmtpd"
+license=(Apache)
+depends=(python-atpublic python-attrs python-typing-extensions)
+makedepends=(python-build python-installer python-setuptools python-wheel)
+checkdepends=(python-pytest python-pytest-mock)
+source=(https://files.pythonhosted.org/packages/source/${_name::1}/$_name/$_name-$pkgver.tar.gz)
+sha512sums=('SKIP')
+
+b2sums=('SKIP')
+
+build() {
+  cd $_name-$pkgver
+  python -m build --wheel --no-isolation
+}
+
+check() {
+  cd $_name-$pkgver
+  pytest -vv --ignore=aiosmtpd/qa/
+}
+
+package() {
+  local _site_packages=$(python -c "import site; print(site.getsitepackages()[0])")
+
+  cd $_name-$pkgver
+  python -m installer --destdir="$pkgdir" dist/*.whl
+  install -vDm 644 README.rst -t "${pkgdir}/usr/share/doc/${pkgname}"
+  # remove unneeded stuff: https://github.com/aio-libs/aiosmtpd/issues/356
+  rm -frv "$pkgdir/$_site_packages/$_name/"{docs,qa,tests}
+}

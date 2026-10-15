@@ -1,22 +1,66 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
-pkgname=zlib 
-pkgver=1.2.12 
-pkgrel=2 
-pkgdesc='contains compression and decompression routines' 
-url='https://www.zlib.net/' 
-arch=('any') 
-groups=(ovios) 
-source=('zlib-1.2.12.tar.xz')
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: David Runge <dvzrv@archlinux.org>
+# Contributor: Levente Polyak <anthraxx@archlinux.org>
+# Contributor: Pierre Schmitz <pierre@archlinux.de>
 
+pkgbase=zlib
+pkgname=(zlib minizip)
+epoch=1
+pkgver=1.3.2
+pkgrel=4
+arch=('x86_64')
+license=('custom')
+url="https://www.zlib.net/"
+depends=('glibc')
+options=(
+  'staticlibs'  # needed by binutils testsuite
+  'debug'
+)
+source=("https://zlib.net/zlib-${pkgver}.tar.gz"{,.asc})
+sha256sums=('SKIP' 'SKIP')
+
+validpgpkeys=('5ED46A6721D365587791E2AA783FCD8E58BCAFBA')
+
+prepare() {
+  cd $pkgbase-$pkgver/contrib/minizip
+  cp Makefile Makefile.orig
+  cp ../README.contrib readme.txt
+  autoreconf -fiv
+}
 
 build() {
-  cd $srcdir/$pkgname-$pkgver
+  cd $pkgbase-$pkgver
+
+  CFLAGS+=" -ffat-lto-objects"
   ./configure --prefix=/usr
   make
+
+  cd contrib/minizip
+  ./configure --prefix=/usr --enable-static=no
+  make
 }
- 
-package() { 
-  cd $srcdir/$pkgname-$pkgver
-  make DESTDIR=$pkgdir install
-  rm -f ${pkgdir}/usr/lib/libz.a
+
+check() {
+  make test -C $pkgbase-$pkgver
+
+  make -f Makefile.orig test -C $pkgbase-$pkgver/contrib/minizip
+}
+
+package_zlib() {
+  pkgdesc='Compression library implementing the deflate compression method found in gzip and PKZIP'
+
+  make install DESTDIR="${pkgdir}" -C $pkgbase-$pkgver
+  install -D -m644 $pkgbase-$pkgver/LICENSE -t "${pkgdir}/usr/share/licenses/$pkgname/"
+}
+
+package_minizip() {
+  pkgdesc='Mini zip and unzip based on zlib'
+  depends=('zlib')
+
+  make install DESTDIR="${pkgdir}" -C $pkgbase-$pkgver/contrib/$pkgname
+  install -D -m644 $pkgbase-$pkgver/LICENSE -t "${pkgdir}/usr/share/licenses/$pkgname/"
+
+  # https://github.com/madler/zlib/pull/229
+  rm "${pkgdir}/usr/include/minizip/crypt.h"
 }

@@ -1,26 +1,38 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Antonio Rojas <arojas@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
 pkgname=gmp
-pkgver=6.2.1
-pkgrel=1
-pkgdesc='The GMP package contains math libraries.'
+pkgver=6.3.0
+pkgrel=3
+pkgdesc='A free library for arbitrary precision arithmetic'
+arch=(x86_64)
+url='https://gmplib.org/'
+depends=(gcc-libs sh)
+license=(LGPL3 GPL)
+source=(https://gmplib.org/download/gmp/gmp-$pkgver.tar.lz{,.sig})
+sha256sums=('SKIP' 'SKIP')
 
-arch=('any') 
-groups=(ovios) 
-source=(${pkgname}-${pkgver}.tar.xz)
+validpgpkeys=('343C2FF0FBEE5EC2EDBEF399F3599FF828C67298')   # Niels Möller
 
-build() { 
-	cd $srcdir/$pkgname-$pkgver
-	./configure --prefix=/usr    \
-            --enable-cxx     \
-            --disable-static \
-            --docdir=/usr/share/doc/gmp-${pkgver}
-	make
-	make html
-} 
- 
-package() { 
-  cd $srcdir/$pkgname-$pkgver
-  
-  make DESTDIR=$pkgdir install
-  make DESTDIR=$pkgdir install-html
+build() {
+  cd $pkgname-$pkgver
+
+  ./configure --build=${CHOST} \
+    --prefix=/usr \
+    --enable-cxx \
+    --enable-fat
+  make
+}
+
+check() {
+  cd $pkgname-$pkgver
+  make check
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="${pkgdir}" install
 }

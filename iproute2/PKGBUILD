@@ -1,25 +1,68 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Christian Hesse <mail@eworm.de>
+# Contributor: Ronald van Haren <ronald.archlinux.org>
+# Contributor: Judd Vinet <jvinet@zeroflux.org>
+
 pkgname=iproute2
-pkgver=5.16.0
+pkgver=7.2.0
 pkgrel=1
-pkgdesc="The IPRoute2 package contains programs for basic and advanced IPV4-based networking." 
-arch=(i686 x86_64) 
+pkgdesc='IP Routing Utilities'
+arch=('x86_64')
+license=('GPL2')
+url='https://git.kernel.org/pub/scm/network/iproute2/iproute2.git'
+depends=('glibc' 'iptables' 'libcap' 'libelf' 'libbpf')
+makedepends=('db5.3')
+optdepends=('db5.3: userspace arp daemon'
+            'linux-atm: ATM support'
+            'python: for routel')
+provides=('iproute')
+backup=('etc/iproute2/bpf_pinning'
+        'etc/iproute2/ematch_map'
+        'etc/iproute2/group'
+        'etc/iproute2/nl_protos'
+        'etc/iproute2/rt_dsfield'
+        'etc/iproute2/rt_protos'
+        'etc/iproute2/rt_realms'
+        'etc/iproute2/rt_scopes'
+        'etc/iproute2/rt_tables')
+makedepends=('linux-atm')
+options=('staticlibs')
+validpgpkeys=('9F6FC345B05BE7E766B83C8F80A77F6095CDE47E') # Stephen Hemminger
+source=("https://www.kernel.org/pub/linux/utils/net/${pkgname}/${pkgname}-${pkgver}.tar."{xz,sign}
+        '0001-make-iproute2-fhs-compliant.patch'
+        '0002-bdb-5-3.patch')
+sha256sums=('SKIP' 'SKIP' '758b82bd61ed7512d215efafd5fab5ae7a28fbfa6161b85e2ce7373285e56a5d' '611c1ad7946aab226a5f4059922d9430f51b3377e33911427f8fdf7f7d31f7d6')
 
-groups=(ovios)
+prepare() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
 
-source=($pkgname-$pkgver.tar.xz)
+  # set correct fhs structure
+  patch -Np1 -i "${srcdir}"/0001-make-iproute2-fhs-compliant.patch
 
-build() { 
-    cd "$srcdir/$pkgname-$pkgver"
-	sed -i /ARPD/d Makefile
-	rm -fv man/man8/arpd.8
-	make
+  # use Berkeley DB 5.3
+  patch -Np1 -i "${srcdir}"/0002-bdb-5-3.patch
+
+  # do not treat warnings as errors
+  sed -i 's/-Werror//' Makefile
+
 }
 
-package() { 
-    cd "$srcdir/$pkgname-$pkgver"
-	make DESTDIR=${pkgdir} SBINDIR=/usr/sbin install
-    # libnetlink isn't installed, install it FS#19385
-    install -Dm0644 include/libnetlink.h "${pkgdir}/usr/include/libnetlink.h"
-    install -Dm0644 lib/libnetlink.a "${pkgdir}/usr/lib/libnetlink.a"
+build() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  export CFLAGS+=' -ffat-lto-objects'
+
+  ./configure
+  make DBM_INCLUDE='/usr/include/db5.3'
+}
+
+package() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  make DESTDIR="${pkgdir}" SBINDIR="/usr/bin" install
+
+  # libnetlink isn't installed, install it FS#19385
+  install -Dm0644 include/libnetlink.h "${pkgdir}/usr/include/libnetlink.h"
+  install -Dm0644 lib/libnetlink.a "${pkgdir}/usr/lib/libnetlink.a"
 }

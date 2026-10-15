@@ -1,15 +1,26 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Lukas Fleischer <lfleischer@archlinux.org>
+# Contributor: Caleb Maclennan <caleb@alerque.com>
+# Contributor: Kaiting Chen <kaitocracy@gmail.com>
+# Contributor: Aaron Schaefer <aaron@elasticdog.com>
+
 pkgname=pv
-pkgver=1.6.20
+pkgver=1.12.0
 pkgrel=1
-groups=(ovios)
 pkgdesc='A terminal-based tool for monitoring the progress of data through a pipeline.'
 arch=('x86_64')
 url='http://www.ivarch.com/programs/pv.shtml'
 _url="https://github.com/a-j-wood/$pkgname"
 license=('custom:Artistic 2.0')
 depends=('glibc')
+# source=("http://www.ivarch.com/programs/sources/$pkgname-$pkgver.tar.bz2")
 source=("$_url/releases/download/v$pkgver/$pkgname-$pkgver.tar.bz2")
+md5sums=('SKIP')
+
+sha256sums=('SKIP')
+
+b2sums=('SKIP')
 
 build() {
   cd "${srcdir}/${pkgname}-${pkgver}"

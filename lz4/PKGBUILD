@@ -1,19 +1,23 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Sébastien Luttringer
+
 pkgname=lz4
 epoch=1
-pkgver=1.9.3
+pkgver=1.10.0
 pkgrel=2
 pkgdesc='Extremely fast compression algorithm'
 arch=('x86_64')
-url='http://www.lz4.org/'
+url='https://lz4.github.io/lz4/'
 license=('GPL2')
-groups=(ovios)
-
-source=("https://github.com/lz4/lz4/archive/refs/tags/v${pkgver}.tar.gz"
-        'https://github.com/lz4/lz4/commit/8301a21773ef61656225e264f4f06ae14462bca7.patch')
+makedepends=('git')
+checkdepends=('diffutils')
+depends=('glibc')
+source=("git+https://github.com/lz4/lz4.git#tag=v$pkgver")
+sha256sums=('SKIP')
 
 prepare() {
-  cd $pkgname-${pkgver}
+  cd $pkgname
   # apply patch from the source array (should be a pacman feature)
   local src
   for src in "${source[@]}"; do
@@ -28,13 +32,22 @@ prepare() {
 build() {
   # do not use the main makefile, it calls sub make with -e
   # exported CLFAGS by makepkg break the version. see FS#50071
-  cd $pkgname-${pkgver}
+  cd $pkgname
   make -C lib PREFIX=/usr
   make -C programs PREFIX=/usr lz4 lz4c
 }
 
+check() {
+  rm -f passwd.lz4
+  $pkgname/programs/lz4 /etc/passwd passwd.lz4
+  $pkgname/programs/lz4 -d passwd.lz4 passwd
+  diff -q /etc/passwd passwd
+  rm passwd
+}
+
 package() {
-  cd $pkgname-${pkgver}
+  cd $pkgname
   make install PREFIX=/usr DESTDIR="$pkgdir"
 }
 
+# vim:set ts=2 sw=2 et:

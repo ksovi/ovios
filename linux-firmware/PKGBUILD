@@ -1,33 +1,52 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Thomas Bächler <thomas@archlinux.org>
 
 pkgbase=linux-firmware
 pkgname=(linux-firmware-whence linux-firmware amd-ucode
          linux-firmware-{nfp,mellanox,marvell,qcom,liquidio,qlogic,bnx2x}
 )
-pkgver=20201022
+_tag=20230404
+pkgver=20260916
 pkgrel=1
 pkgdesc="Firmware files for Linux"
-url="https://git.kernel.org/pub/scm/linux/kernel/git/hansg/linux-firmware.git/"
+url="https://git.kernel.org/?p=linux/kernel/git/firmware/linux-firmware.git;a=summary"
 license=('GPL2' 'GPL3' 'custom')
 arch=('any')
-groups=(ovios)
+makedepends=('git')
 options=(!strip)
-source=( ${pkgbase}-${pkgver}.tar.gz
+source=("git+https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git#tag=${_tag}?signed"
          0001-Add-support-for-compressing-firmware-in-copy-firmware.patch)
-		 
+sha256sums=('SKIP' 'aa11b2eed9c0be42571b45eb7153908a43290f02a5fc715aefcaa81030a1832f')
+
+validpgpkeys=('4CDE8575E547BF835FE15807A31B6BD72486CFD6') # Josh Boyer <jwboyer@fedoraproject.org>
+
 _backports=(
 )
 
 prepare() {
-  cd ${pkgbase}-${pkgver}
+  cd ${pkgbase}
+
+  local _c
+  for _c in "${_backports[@]}"; do
+    git log --oneline -1 "${_c}"
+    git cherry-pick -n "${_c}"
+  done
+
   # add firmware compression support - patch taken from Fedora
   patch -Np1 -i ../0001-Add-support-for-compressing-firmware-in-copy-firmware.patch
 }
 
+pkgver() {
+  cd ${pkgbase}
+
+  # Commit date + short rev
+  echo $(TZ=UTC git show -s --pretty=%cd --date=format-local:%Y%m%d HEAD).$(git rev-parse --short HEAD)
+}
 
 build() {
   mkdir -p kernel/x86/microcode
-  cat ${pkgbase}-${pkgver}/amd-ucode/microcode_amd*.bin > kernel/x86/microcode/AuthenticAMD.bin
+  cat ${pkgbase}/amd-ucode/microcode_amd*.bin > kernel/x86/microcode/AuthenticAMD.bin
 
   # Reproducibility: set the timestamp on the bin file
   if [[ -n ${SOURCE_DATE_EPOCH} ]]; then
@@ -53,13 +72,13 @@ _pick() {
 package_linux-firmware-whence() {
   pkgdesc+=" - contains the WHENCE license file which documents the vendor license details"
 
-  install -Dt "${pkgdir}/usr/share/licenses/${pkgname}" -m644 ${pkgbase}-${pkgver}/WHENCE
+  install -Dt "${pkgdir}/usr/share/licenses/${pkgname}" -m644 ${pkgbase}/WHENCE
 }
 
 package_linux-firmware() {
   depends=('linux-firmware-whence')
 
-  cd ${pkgbase}-${pkgver}
+  cd ${pkgbase}
 
   make DESTDIR="${pkgdir}" FIRMWAREDIR=/usr/lib/firmware installcompress
 
@@ -81,7 +100,7 @@ package_linux-firmware() {
   _pick linux-firmware-marvell usr/share/licenses/${pkgname}/LICENCE.{Marvell,NXP}
 
   _pick linux-firmware-qcom usr/lib/firmware/{qcom,a300_*}
-  _pick linux-firmware-qcom usr/share/licenses/${pkgname}/LICENSE.qcom
+  _pick linux-firmware-qcom usr/share/licenses/${pkgname}/LICENSE.qcom*
 
   _pick linux-firmware-liquidio usr/lib/firmware/liquidio
   _pick linux-firmware-liquidio usr/share/licenses/${pkgname}/LICENCE.cavium_liquidio
@@ -98,7 +117,7 @@ package_amd-ucode() {
 
   install -Dt "${pkgdir}/boot" -m644 amd-ucode.img
 
-  install -Dt "${pkgdir}/usr/share/licenses/${pkgname}" -m644 ${pkgbase}-${pkgver}/LICENSE.amd-ucode
+  install -Dt "${pkgdir}/usr/share/licenses/${pkgname}" -m644 ${pkgbase}/LICENSE.amd-ucode
 }
 
 package_linux-firmware-nfp() {
@@ -118,8 +137,10 @@ package_linux-firmware-mellanox() {
 package_linux-firmware-marvell() {
   pkgdesc+=" - marvell / Firmware for Marvell devices"
   depends=('linux-firmware-whence')
-
+  
   mv -v linux-firmware-marvell/* "${pkgdir}"
+  # remove arm64 firmware #76583
+  rm "${pkgdir}"/usr/lib/firmware/mrvl/prestera/mvsw_prestera_fw_arm64-v4.1.img.xz
 }
 
 package_linux-firmware-qcom() {

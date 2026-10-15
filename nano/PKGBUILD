@@ -1,24 +1,37 @@
 # Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: Judd <judd@archlinux.org>
+
 pkgname=nano
-pkgver=6.2
+pkgver=9.2
 pkgrel=1
-pkgdesc="a small, simple text editor which aims to replace Pico, the default editor in the Pine package."
-arch=('i686' 'x86_64')
-groups=(ovios)
-source=(https://www.nano-editor.org/dist/v6/nano-${pkgver}.tar.xz)
+pkgdesc="Pico editor clone with enhancements"
+arch=('x86_64')
+license=('GPL')
+url="https://www.nano-editor.org"
+depends=('ncurses' 'file' 'sh')
+backup=('etc/nanorc')
+source=(https://www.nano-editor.org/dist/v7/${pkgname}-${pkgver}.tar.xz{,.asc})
+sha256sums=('SKIP' 'SKIP')
 
-
+#validpgpkeys=('8DA6FE7BFA7A418AB3CB2354BCB356DF91009FA7') # "Chris Allegretta <chrisa@asty.org>"
+#validpgpkeys=('A7F6A64A67DA09EF92782DD79DF4862AF1175C5B') # "Benno Schulenberg <bensberg@justemail.net>"
+#validpgpkeys=('BFD009061E535052AD0DF2150D28D4D2A0ACE884') # "Benno Schulenberg <bensberg@telfort.nl>"
+validpgpkeys=('168E6F4297BFD7A79AFD4496514BBE2EB8E1961F') # "Benno Schulenberg <bensberg@telfort.nl>" 
 
 build() {
-	 cd ${pkgname}-${pkgver}
-	 ./configure --prefix=/usr     \
-            --sysconfdir=/etc \
-            --enable-utf8     \
-            --docdir=/usr/share/doc/nano-${pkgver}
+  cd ${pkgname}-${pkgver}
+  ./configure --prefix=/usr \
+    --sysconfdir=/etc \
+    --enable-color \
+    --enable-nanorc \
+    --enable-multibuffer
+  make
 }
 
 package() {
-	 cd ${pkgname}-${pkgver}
-	 make DESTDIR=${pkgdir} install
-	install -v -m644 doc/{nano.html,sample.nanorc} ${pkgdir}/usr/share/doc/nano-${pkgver}
+  cd ${pkgname}-${pkgver}
+  make DESTDIR="${pkgdir}" install
+  install -DTm644 "${srcdir}"/${pkgname}-${pkgver}/doc/sample.nanorc "${pkgdir}"/etc/nanorc
 }

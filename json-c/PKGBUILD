@@ -1,0 +1,45 @@
+# Maintainer: Ovi Chis <ovi@ovios.org>
+# Based on the Arch Linux package; original contributors credited below
+# Contributor: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Geoffroy Carrier <geoffroy.carrier@koon.fr>
+# Contributor: congyiwu <congyiwu AT gmail DOT com>
+
+pkgname=json-c
+pkgver=0.19
+pkgrel=1
+pkgdesc="A JSON implementation in C"
+url="https://github.com/json-c/json-c/wiki"
+license=(MIT)
+arch=(x86_64)
+depends=(glibc)
+makedepends=(git cmake ninja)
+provides=(libjson-c.so)
+_tag=json-c-$pkgver-20220414
+source=("git+https://github.com/json-c/json-c#tag=$_tag")
+sha256sums=('SKIP')
+
+prepare() {
+  cd json-c
+}
+
+build() {
+  cmake -S json-c -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=None \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_INSTALL_LIBDIR=/usr/lib \
+    -DBUILD_STATIC_LIBS=OFF \
+    -DENABLE_THREADING=ON \
+    -DENABLE_RDRAND=OFF
+  cmake --build build
+}
+
+check() {
+  cmake --build build --target test
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 json-c/COPYING
+}
+
+# vim:set sw=2 et:
