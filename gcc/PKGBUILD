@@ -9,7 +9,7 @@
 # toolchain build order: linux-api-headers->glibc->binutils->gcc->glibc->binutils->gcc
 # NOTE: libtool requires rebuilt with each new gcc version
 
-pkgname=(gcc gcc-libs lib32-gcc-libs gcc-ada gcc-d gcc-fortran gcc-go gcc-objc lto-dump libgccjit)
+pkgname=(libgcc libstdc++ libgfortran libgomp libobjc libquadmath libatomic libasan libhwasan liblsan libtsan libubsan gcc-libs gcc lib32-gcc-libs gcc-ada gcc-d gcc-fortran gcc-go gcc-objc lto-dump libgccjit)
 pkgver=16.2.1+r23+gd564253eb6c8
 _majorver=${pkgver%%.*}
 _commit=d564253eb6c8
@@ -153,15 +153,13 @@ check() {
   "$srcdir/gcc/contrib/test_summary"
 }
 
-package_gcc-libs() {
-  pkgdesc='Runtime libraries shipped by GCC'
-  depends=('glibc>=2.27')
-  options=(!emptydirs !strip)
-  provides=($pkgname-multilib libgo.so libgfortran.so libgphobos.so
-            libubsan.so libasan.so libtsan.so liblsan.so)
-  replaces=($pkgname-multilib libgphobos)
+_stage_libs() {
+  # install every runtime library once into a staging tree; the per-library
+  # packages below then pick their own files out of it
+  [[ -d $srcdir/libs ]] && return
+  local pkgdir="$srcdir/libs"
 
-  cd gcc-build
+  cd "$srcdir/gcc-build"
   make -C $CHOST/libgcc DESTDIR="$pkgdir" install-shared
   rm -f "$pkgdir/$_libdir/libgcc_eh.a"
 
@@ -192,10 +190,151 @@ package_gcc-libs() {
 
   # remove files provided by lib32-gcc-libs
   rm -rf "$pkgdir"/usr/lib32/
+}
 
-  # Install Runtime Library Exception
+# move files matching the given globs (relative to the staging tree) into $pkgdir
+_pick_libs() {
+  local f g
+  cd "$srcdir/libs"
+  for f in "$@"; do
+    for g in $f; do
+      [[ -e $g || -L $g ]] || continue
+      install -d "$pkgdir/$(dirname "$g")"
+      mv "$g" "$pkgdir/$(dirname "$g")/"
+    done
+  done
+}
+
+_license_rte() {
   install -Dm644 "$srcdir/gcc/COPYING.RUNTIME" \
-    "$pkgdir/usr/share/licenses/gcc-libs/RUNTIME.LIBRARY.EXCEPTION"
+    "$pkgdir/usr/share/licenses/$pkgname/RUNTIME.LIBRARY.EXCEPTION"
+}
+
+package_libgcc() {
+  pkgdesc='GCC low-level runtime library'
+  depends=('glibc>=2.27')
+  options=(!emptydirs !strip)
+  _stage_libs
+  _pick_libs usr/lib/libgcc_s.so*
+  _license_rte
+}
+
+package_libstdc++() {
+  pkgdesc='GNU Standard C++ Library'
+  depends=(libgcc)
+  options=(!emptydirs !strip)
+  _stage_libs
+  _pick_libs usr/lib/libstdc++.so* usr/share/locale/*/LC_MESSAGES/libstdc++.mo
+  _license_rte
+}
+
+package_libgfortran() {
+  pkgdesc='Fortran runtime library for GCC'
+  depends=(libgcc libquadmath)
+  provides=(libgfortran.so)
+  options=(!emptydirs !strip)
+  _stage_libs
+  _pick_libs usr/lib/libgfortran.so* usr/lib/libgfortran.spec
+  _license_rte
+}
+
+package_libgomp() {
+  pkgdesc='GCC OpenMP runtime library'
+  depends=(libgcc)
+  options=(!emptydirs !strip)
+  _stage_libs
+  _pick_libs usr/lib/libgomp.so* usr/lib/libgomp.spec usr/share/info/libgomp.info
+  _license_rte
+}
+
+package_libobjc() {
+  pkgdesc='GCC Objective-C runtime library'
+  depends=(libgcc)
+  options=(!emptydirs !strip)
+  _stage_libs
+  _pick_libs usr/lib/libobjc.so*
+  _license_rte
+}
+
+package_libquadmath() {
+  pkgdesc='GCC quad-precision math runtime library'
+  depends=(libgcc)
+  options=(!emptydirs !strip)
+  _stage_libs
+  _pick_libs usr/lib/libquadmath.so* usr/share/info/libquadmath.info
+  _license_rte
+}
+
+package_libatomic() {
+  pkgdesc='GCC atomic operations runtime library'
+  depends=(libgcc)
+  options=(!emptydirs !strip)
+  _stage_libs
+  _pick_libs usr/lib/libatomic.so*
+  _license_rte
+}
+
+package_libasan() {
+  pkgdesc='GCC AddressSanitizer runtime library'
+  depends=(libgcc libstdc++)
+  provides=(libasan.so)
+  options=(!emptydirs !strip)
+  _stage_libs
+  _pick_libs usr/lib/libasan.so*
+  _license_rte
+}
+
+package_libhwasan() {
+  pkgdesc='GCC hardware-assisted AddressSanitizer runtime library'
+  depends=(libgcc libstdc++)
+  options=(!emptydirs !strip)
+  _stage_libs
+  _pick_libs usr/lib/libhwasan.so*
+  _license_rte
+}
+
+package_liblsan() {
+  pkgdesc='GCC LeakSanitizer runtime library'
+  depends=(libgcc libstdc++)
+  provides=(liblsan.so)
+  options=(!emptydirs !strip)
+  _stage_libs
+  _pick_libs usr/lib/liblsan.so*
+  _license_rte
+}
+
+package_libtsan() {
+  pkgdesc='GCC ThreadSanitizer runtime library'
+  depends=(libgcc libstdc++)
+  provides=(libtsan.so)
+  options=(!emptydirs !strip)
+  _stage_libs
+  _pick_libs usr/lib/libtsan.so*
+  _license_rte
+}
+
+package_libubsan() {
+  pkgdesc='GCC UndefinedBehaviorSanitizer runtime library'
+  depends=(libgcc libstdc++)
+  provides=(libubsan.so)
+  options=(!emptydirs !strip)
+  _stage_libs
+  _pick_libs usr/lib/libubsan.so*
+  _license_rte
+}
+
+package_gcc-libs() {
+  pkgdesc='Runtime libraries shipped by GCC'
+  depends=(libgcc libstdc++ libgfortran libgomp libobjc libquadmath libatomic
+           libasan libhwasan liblsan libtsan libubsan)
+  options=(!emptydirs !strip)
+  provides=($pkgname-multilib libgo.so libgphobos.so)
+  replaces=($pkgname-multilib libgphobos)
+
+  # whatever is left in the staging tree (libitm, libgo, libvtv, libphobos)
+  _stage_libs
+  cp -a "$srcdir/libs/." "$pkgdir/"
+  _license_rte
 }
 
 package_gcc() {
